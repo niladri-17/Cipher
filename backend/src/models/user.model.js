@@ -4,34 +4,62 @@ import jwt from "jsonwebtoken";
 
 const userSchema = new mongoose.Schema(
   {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowecase: true,
-      trim: true,
-    },
     fullName: {
       type: String,
       required: true,
       trim: true,
       index: true,
     },
+    email: {
+      type: String,
+      unique: true,
+      lowecase: true,
+      trim: true,
+      sparse: true,
+    },
+    phone: {
+      type: String,
+      unique: true,
+      sparse: true,
+    }, // Optional for email users
     password: {
       type: String,
-      required: true,
       minlength: 6,
     },
     profilePic: {
       type: String,
       default: "",
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    otp: {
+      type: String,
+    }, // Stores temporary OTP for phone login
+    otpExpires: {
+      type: Date,
+    }, // OTP expiration time
     refreshToken: {
       type: String,
     },
+    status: {
+      type: String,
+      enum: ["online", "offline", "busy"],
+      default: "offline",
+    },
+    lastSeen: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
+
+userSchema.pre("validate", function (next) {
+  if (!this.email && !this.phone) {
+    return next(new Error("Either email or phone number must be provided"));
+  }
+  next();
+});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();

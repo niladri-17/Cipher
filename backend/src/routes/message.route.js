@@ -1,16 +1,11 @@
-import express from "express";
-import { verifyJWT } from "../middlewares/auth.middleware.js";
-import { upload } from "../middlewares/multer.middleware.js";
-import {
-  signup,
-  login,
-  logout,
-  updateProfilePic,
-  refreshAccessToken,
-} from "../controllers/auth.controller.js";
+const express = require("express");
+const { sendMessage, getMessages, deleteMessage, markMessageAsSeen } = require("../controllers/messageController");
 
 const router = express.Router();
 
-router.route("/signup").post(signup); // or, router.post("/signup", signup);
+router.post("/", sendMessage);
+router.get("/:conversationId", getMessages);
+router.delete("/:messageId", deleteMessage);
+router.put("/:messageId/seen", markMessageAsSeen);
 
-export default router;
+module.exports = router;
