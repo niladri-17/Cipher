@@ -3,6 +3,10 @@ import User from "../models/user.model.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import mongoose from "mongoose";
+import {
+  uploadOnCloudinary,
+  deleteFromCloudinary,
+} from "../utils/cloudinary.js";
 
 const options = {
   httpOnly: true, // This cookie cannot be accessed by client side javascript
@@ -218,4 +222,40 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-export { signup, login, logout, refreshAccessToken };
+const updateProfilePic = asyncHandler(async (req, res) => {
+  const profilePicLocalPath = req.file?.path;
+
+  if (!profilePicLocalPath) {
+    throw new ApiError(400, "Profile Picture is missing");
+  }
+
+  // delete old image from cloudinary
+  let user = await User.findById(req.user?._id);
+
+  if (user?.profilePic) {
+    const publicId = user.profilePic.split("/").pop().split(".")[0];
+    await deleteFromCloudinary(publicId);
+  }
+
+  const profilePic = await uploadOnCloudinary(profilePicLocalPath);
+
+  if (!profilePic?.url) {
+    throw new ApiError(500, "Something went wrong while uploading profile pic");
+  }
+
+  user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        profilePic: profilePic.url,
+      },
+    },
+    { new: true }
+  ).select("-password -refreshToken");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Profile picture updated successfully"));
+});
+
+export { signup, login, logout, updateProfilePic, refreshAccessToken };

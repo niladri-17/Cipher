@@ -12,11 +12,5 @@ import {
 const router = express.Router();
 
 router.route("/signup").post(signup); // or, router.post("/signup", signup);
-router.route("/login").post(login);
-router
-  .route("/update-avatar")
-  .patch(verifyJWT, upload.single("profilePic"), updateProfilePic);
-router.route("/refresh-token").get(refreshAccessToken);
-router.route("/logout").post(verifyJWT, logout); // or, router.post("/logout", verifyJWT, logout);
 
 export default router;
