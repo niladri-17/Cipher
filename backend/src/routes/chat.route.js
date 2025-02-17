@@ -1,10 +1,10 @@
-const express = require("express");
-const { startConversation, getUserConversations, deleteConversation } = require("../controllers/conversationController");
+import express from "express";
+import { startSingleChat} from "../controllers/chat.controller.js";
 
 const router = express.Router();
 
-router.post("/", startConversation);
-router.get("/:userId", getUserConversations);
-router.delete("/:conversationId", deleteConversation);
+router.post("/", startSingleChat);
+// router.get("/:userId", getUserConversations);
+// router.delete("/:conversationId", deleteConversation);
 
-module.exports = router;
+export default router;

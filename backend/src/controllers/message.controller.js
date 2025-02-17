@@ -29,9 +29,56 @@ const sendMessage = asyncHandler(async (req, res) => {
   return res.status(201).json(new ApiResponse(201, message, "Message sent"));
 });
 
-export { sendMessage };
+const getMessages = asyncHandler(async (req, res) => {
+  const chatId = req.params.chatId;
+  const messages = await Message.find({ chatId }).sort({ createdAt: 1 });
 
-exports.getMessages = (req, res) => {};
-exports.updateMessage = (req, res) => {};
-exports.deleteMessage = (req, res) => {};
-exports.markMessageAsSeen = (req, res) => {};
+  return res
+    .status(200)
+    .json(new ApiResponse(200, messages, "Messages retrieved"));
+});
+
+const updateMessage = asyncHandler(async (req, res) => {
+  const messageId = req.params.messageId;
+  const { text } = req.body;
+
+  if (!text) {
+    throw new ApiError(400, "text is required");
+  }
+
+  const message = await Message.findByIdAndUpdate(
+    messageId,
+    { text },
+    { new: true }
+  );
+
+  return res.status(200).json(new ApiResponse(200, message, "Message updated"));
+});
+
+const deleteMessage = asyncHandler(async (req, res) => {
+  const messageId = req.params.messageId;
+  await Message.findByIdAndDelete(messageId);
+
+  return res.status(200).json(new ApiResponse(200, null, "Message deleted"));
+});
+
+const markMessageAsSeen = asyncHandler(async (req, res) => {
+  const messageId = req.params.messageId;
+  const message = await Message.findByIdAndUpdate(
+    messageId,
+    { $addToSet: { seenBy: req.user._id } }, // $addToSet ensures unique values in the array
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, message, "Message marked as seen"));
+});
+
+export {
+  sendMessage,
+  getMessages,
+  updateMessage,
+  deleteMessage,
+  markMessageAsSeen,
+};

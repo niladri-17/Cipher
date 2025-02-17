@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema(
   {
@@ -15,6 +15,8 @@ const messageSchema = new mongoose.Schema(
     text: { type: String },
     media: { type: String }, // Image, video, file URL
     seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Users who read the message
+    isDeleted: { type: Boolean, default: false },
+    isVisible: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

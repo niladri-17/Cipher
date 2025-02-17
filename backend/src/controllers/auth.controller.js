@@ -7,12 +7,12 @@ import {
   uploadOnCloudinary,
   deleteFromCloudinary,
 } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken";
 
 const options = {
   httpOnly: true, // This cookie cannot be accessed by client side javascript
   secure: true, // This cookie can only be sent over https
   sameSite: "strict", // This cookie is not sent with cross-origin requests
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
 const generateAccessAndRefereshTokens = async (user, session) => {
@@ -29,6 +29,15 @@ const generateAccessAndRefereshTokens = async (user, session) => {
       500,
       "Something went wrong while generating refresh and access token"
     );
+  }
+};
+
+const authCheck = (req, res) => {
+  try {
+    return res.status(200).json(new ApiResponse(200, req.user, ""));
+  } catch (error) {
+    console.log("Error in checkAuth controller", error.message);
+    throw new ApiError(500, "Something went wrong");
   }
 };
 
@@ -125,13 +134,13 @@ const login = asyncHandler(async (req, res) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw new ApiError(404, "User does not exist");
+    throw new ApiError(401, "Invalid email or password");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
 
-  if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid user credentials");
+  if(!isPasswordValid) {
+    throw new ApiError(401, "Invalid email or password");
   }
 
   const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(
@@ -158,6 +167,90 @@ const login = asyncHandler(async (req, res) => {
       )
     );
 });
+
+const googleLogin = async (req, res) => {
+  try {
+    const { googleId, email, name, avatar } = req.body;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({ googleId, email, name, avatar, status: "online" });
+      await user.save();
+    }
+
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(200).json({ success: true, token, user });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Google login failed!" });
+  }
+};
+
+// const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
+
+// 🔹 Send OTP via Twilio
+const sendOtp = async (req, res) => {
+  try {
+    const { phone } = req.body;
+    const otp = crypto.randomInt(100000, 999999).toString(); // Generate 6-digit OTP
+    const otpExpires = Date.now() + 5 * 60 * 1000; // Expires in 5 mins
+
+    let user = await User.findOne({ phone });
+
+    if (!user) {
+      user = new User({ phone, otp, otpExpires });
+    } else {
+      user.otp = otp;
+      user.otpExpires = otpExpires;
+    }
+
+    await user.save();
+
+    // Send OTP via Twilio
+    await twilioClient.messages.create({
+      body: `Your verification code is ${otp}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: phone,
+    });
+
+    res.status(200).json({ success: true, message: "OTP sent successfully!" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "OTP sending failed!" });
+  }
+};
+
+// 🔹 Verify OTP and authenticate user
+const verifyOtp = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    const user = await User.findOne({ phone });
+
+    if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    user.otp = null;
+    user.otpExpires = null;
+    await user.save();
+
+    // Generate JWT token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.status(200).json({ success: true, token, user });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, message: "OTP verification failed!" });
+  }
+};
 
 const logout = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
@@ -204,7 +297,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     }
 
     const { accessToken, newRefreshToken } =
-      await generateAccessAndRefereshTokens(user._id);
+      await generateAccessAndRefereshTokens(user);
 
     return res
       .status(200)
@@ -258,84 +351,14 @@ const updateProfilePic = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, user, "Profile picture updated successfully"));
 });
 
-// const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
-
-// // 🔹 Send OTP via Twilio
-// exports.sendOtp = async (req, res) => {
-//   try {
-//     const { phone } = req.body;
-//     const otp = crypto.randomInt(100000, 999999).toString(); // Generate 6-digit OTP
-//     const otpExpires = Date.now() + 5 * 60 * 1000; // Expires in 5 mins
-
-//     let user = await User.findOne({ phone });
-
-//     if (!user) {
-//       user = new User({ phone, otp, otpExpires });
-//     } else {
-//       user.otp = otp;
-//       user.otpExpires = otpExpires;
-//     }
-
-//     await user.save();
-
-//     // Send OTP via Twilio
-//     await twilioClient.messages.create({
-//       body: `Your verification code is ${otp}`,
-//       from: process.env.TWILIO_PHONE_NUMBER,
-//       to: phone,
-//     });
-
-//     res.status(200).json({ success: true, message: "OTP sent successfully!" });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: "OTP sending failed!" });
-//   }
-// };
-
-// // 🔹 Verify OTP and authenticate user
-// exports.verifyOtp = async (req, res) => {
-//   try {
-//     const { phone, otp } = req.body;
-//     const user = await User.findOne({ phone });
-
-//     if (!user || user.otp !== otp || user.otpExpires < Date.now()) {
-//       return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
-//     }
-
-//     user.otp = null;
-//     user.otpExpires = null;
-//     await user.save();
-
-//     // Generate JWT token
-//     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-//     res.status(200).json({ success: true, token, user });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: "OTP verification failed!" });
-//   }
-// };
-
-// const User = require("../models/User");
-// const jwt = require("jsonwebtoken");
-
-// exports.googleLogin = async (req, res) => {
-//   try {
-//     const { googleId, email, name, avatar } = req.body;
-
-//     let user = await User.findOne({ email });
-
-//     if (!user) {
-//       user = new User({ googleId, email, name, avatar, status: "online" });
-//       await user.save();
-//     }
-
-//     // Generate JWT token
-//     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-//     res.status(200).json({ success: true, token, user });
-//   } catch (error) {
-//     res.status(500).json({ success: false, message: "Google login failed!" });
-//   }
-// };
-
-
-export { signup, login, logout, updateProfilePic, refreshAccessToken };
+export {
+  authCheck,
+  signup,
+  login,
+  googleLogin,
+  sendOtp,
+  verifyOtp,
+  logout,
+  updateProfilePic,
+  refreshAccessToken,
+};
