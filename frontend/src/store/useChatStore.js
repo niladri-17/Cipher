@@ -5,56 +5,62 @@ import { useAuthStore } from "./useAuthStore";
 
 export const useChatStore = create((set, get) => ({
   messages: [],
-  users: [],
-  selectedUser: null,
-  isUsersLoading: false,
+  chats: [],
+  selectedChat: null,
+  isChatsLoading: false,
   isMessagesLoading: false,
 
-  getUsers: async () => {
-    set({ isUsersLoading: true });
+  getChats: async () => {
+    set({ isChatsLoading: true });
     try {
-      const res = await axiosInstance.get("/messages/users");
+      const res = await axiosInstance.get("/chat/all");
       // const res = await axiosInstance.get("/messages/users", {
       //   skipErrorToast: true
       // });
-      set({ users: res.data });
+      set({ chats: res.data.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      if (error.response.status !== 401)
+        toast.error(error.response.data.message);
     } finally {
-      set({ isUsersLoading: false });
+      set({ isChatsLoading: false });
     }
   },
 
-  getMessages: async (userId) => {
+  getMessages: async (chatId) => {
     set({ isMessagesLoading: true });
     try {
-      const res = await axiosInstance.get(`/messages/${userId}`);
-      set({ messages: res.data });
+      const res = await axiosInstance.get(`/message/${chatId}`);
+      set({ messages: res.data.data });
     } catch (error) {
       toast.error(error.response.data.message);
     } finally {
       set({ isMessagesLoading: false });
     }
   },
+
   sendMessage: async (messageData) => {
-    const { selectedUser, messages } = get();
+    const { selectedChat, messages } = get();
     try {
-      const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-      set({ messages: [...messages, res.data] });
+      const res = await axiosInstance.post(
+        `/message/${selectedChat._id}`,
+        messageData
+      );
+      set({ messages: [...messages, res.data.data] });
     } catch (error) {
       toast.error(error.response.data.message);
     }
   },
 
   subscribeToMessages: () => {
-    const { selectedUser } = get();
-    if (!selectedUser) return;
+    const { selectedChat } = get();
+    if (!selectedChat) return;
 
     const socket = useAuthStore.getState().socket;
 
     socket.on("newMessage", (newMessage) => {
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
-      if (!isMessageSentFromSelectedUser) return;
+      const isMessageSentFromSelectedChat =
+        newMessage?.chatId === selectedChat._id;
+      if (!isMessageSentFromSelectedChat) return;
 
       set({
         messages: [...get().messages, newMessage],
@@ -67,5 +73,5 @@ export const useChatStore = create((set, get) => ({
     socket.off("newMessage");
   },
 
-  setSelectedUser: (selectedUser) => set({ selectedUser }),
+  setSelectedChat: (selectedChat) => set({ selectedChat }),
 }));

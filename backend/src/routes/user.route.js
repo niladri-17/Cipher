@@ -1,5 +1,10 @@
-const express = require("express");
-const { getUserProfile, updateUserProfile, searchUsers, updateUserStatus } = require("../controllers/userController");
+import express from "express";
+import {
+  getUserProfile,
+  updateUserProfile,
+  searchUsers,
+  updateUserStatus,
+} from "../controllers/user.controller.js";
 
 const router = express.Router();
 
@@ -8,4 +13,4 @@ router.put("/profile/:id", updateUserProfile);
 router.get("/search", searchUsers);
 router.put("/status/:id", updateUserStatus);
 
-module.exports = router;
+export default router;

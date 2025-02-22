@@ -16,7 +16,8 @@ import { Toaster } from "react-hot-toast";
 import { setNavigate } from "./lib/navigation.js";
 
 const App = () => {
-  const { authUser, onlineUsers } = useAuthStore();
+  const { authUser, onlineUsers, connectSocket, disconnectSocket } =
+    useAuthStore();
   const { theme } = useThemeStore();
   const navigate = useNavigate();
 
@@ -25,6 +26,13 @@ const App = () => {
   // useEffect(() => {
   //   checkAuth();
   // }, [checkAuth]);
+
+  useEffect(() => {
+    connectSocket();
+    return () => {
+      disconnectSocket();
+    };
+  }, [connectSocket, disconnectSocket]);
 
   useEffect(() => {
     setNavigate(navigate); // Store global navigate

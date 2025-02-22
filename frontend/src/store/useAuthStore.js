@@ -15,12 +15,14 @@ const createPersistedSlice = (set, get) => ({
 
 // Create a slice for non-persisted state
 const createNonPersistedSlice = (set, get) => ({
+  socket: null,
   isSigningUp: false,
   isLoggingIn: false,
   isUpdatingProfile: false,
   // isCheckingAuth: false,
   onlineUsers: [],
-  socket: null,
+  searchedUsers: [],
+  isUsersSearching: false,
 });
 
 export const useAuthStore = create(
@@ -36,7 +38,7 @@ export const useAuthStore = create(
       //       authUser: res.data,
       //       isCheckingAuth: false,
       //     });
-      //     // get().connectSocket();
+      // get().connectSocket();
       //   } catch (error) {
       //     console.log("Error in checkAuth:", error);
       //     set({
@@ -55,7 +57,7 @@ export const useAuthStore = create(
           const res = await axiosInstance.post("/auth/signup", data);
           set({ authUser: res.data.data.user });
           toast.success("Account created successfully");
-          // get().connectSocket();
+          get().connectSocket();
         } catch (error) {
           toast.error(error.response.data.message);
         } finally {
@@ -69,7 +71,7 @@ export const useAuthStore = create(
           const res = await axiosInstance.post("/auth/login", data);
           set({ authUser: res.data.data.user });
           toast.success("Logged in successfully");
-          // get().connectSocket();
+          get().connectSocket();
         } catch (error) {
           // if (error.response.status !== 401)
           toast.error(error.response.data.message);
@@ -108,6 +110,24 @@ export const useAuthStore = create(
         }
       },
 
+      getUsers: async (search) => {
+        set({ isUsersSearching: true });
+        try {
+          const res = await axiosInstance.get(`/user/search?query=${search}`);
+          set({ searchedUsers: res.data.data });
+        } catch (error) {
+          if (error.response.status !== 401)
+            toast.error(error.response.data.message);
+        } finally {
+          set({ isUsersSearching: false });
+        }
+      },
+
+      setIsOpenGroupModal: (value) => set({ isOpenGroupModal: value }),
+
+      setSearchedUsers: (searchedUsers) =>
+        set({ searchedUsers: searchedUsers }),
+
       connectSocket: () => {
         const { authUser } = get();
         if (!authUser || get().socket?.connected) return;
@@ -139,6 +159,7 @@ export const useAuthStore = create(
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         authUser: state.authUser,
+        // socket: state.socket,
       }),
     }
   )

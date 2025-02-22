@@ -139,7 +139,7 @@ const login = asyncHandler(async (req, res) => {
 
   const isPasswordValid = await user.isPasswordCorrect(password);
 
-  if(!isPasswordValid) {
+  if (!isPasswordValid) {
     throw new ApiError(401, "Invalid email or password");
   }
 
@@ -296,17 +296,17 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Refresh token has expired. Please login again");
     }
 
-    const { accessToken, newRefreshToken } =
+    const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefereshTokens(user);
 
     return res
       .status(200)
-      .cookie("accessToken", accessToken, options)
+      .cookie("accessToken", newAccessToken, options)
       .cookie("refreshToken", newRefreshToken, options)
       .json(
         new ApiResponse(
           200,
-          { accessToken, refreshToken: newRefreshToken },
+          { accessToken: newAccessToken, refreshToken: newRefreshToken },
           "Access token refreshed"
         )
       );

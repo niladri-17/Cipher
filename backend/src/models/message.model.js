@@ -13,7 +13,7 @@ const messageSchema = new mongoose.Schema(
       required: true,
     },
     text: { type: String },
-    media: { type: String }, // Image, video, file URL
+    media: [{ type: String }], // Image, video, file URL
     seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Users who read the message
     isDeleted: { type: Boolean, default: false },
     isVisible: { type: Boolean, default: true },
