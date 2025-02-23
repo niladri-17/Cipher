@@ -8,6 +8,19 @@ const chatSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    inactive: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    clearHistory: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        clearedAt: {
+          type: Date,
+          default: null,
+        },
+      },
+    ],
     isGroup: {
       type: Boolean,
       default: false,
@@ -30,6 +43,18 @@ const chatSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
     },
+    deleteHistory: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        deletedAt: {
+          type: Date,
+          default: null,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

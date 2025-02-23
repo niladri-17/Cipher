@@ -7,7 +7,8 @@ const MessageInput = () => {
   const [text, setText] = useState("");
   const [imagePreview, setImagePreview] = useState(null);
   const fileInputRef = useRef(null);
-  const { sendMessage } = useChatStore();
+  const { messages, selectedChat, activatePrivateChat, sendMessage, getChats } =
+    useChatStore();
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -33,6 +34,10 @@ const MessageInput = () => {
     if (!text.trim() && !imagePreview) return;
 
     try {
+      if (messages.length === 0) {
+        activatePrivateChat(selectedChat._id);
+        getChats();
+      }
       await sendMessage({
         text: text.trim(),
         media: imagePreview,

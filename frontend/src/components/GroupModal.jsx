@@ -1,13 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { useGroupStore } from "../store/useGroupStore";
 import toast from "react-hot-toast";
+import { useChatStore } from "../store/useChatStore";
 
 const GroupModal = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { isUsersSearching, searchedUsers, setSearchedUsers, getUsers } =
     useAuthStore();
-  const { createGroup } = useGroupStore();
+  const { startGroupChat } = useChatStore();
   const modalRef = useRef(null);
   const [query, setQuery] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
@@ -47,7 +47,7 @@ const GroupModal = ({ children }) => {
       setIsSubmitting(true);
 
       const userIds = selectedUsers.map((user) => user._id);
-      createGroup({
+      startGroupChat({
         userIds,
         groupName: groupName.trim(),
       });

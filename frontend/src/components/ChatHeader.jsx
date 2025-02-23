@@ -6,7 +6,7 @@ const ChatHeader = () => {
   const { selectedChat, setSelectedChat } = useChatStore();
   const { authUser, onlineUsers } = useAuthStore();
 
-  console.log("selectedChat", selectedChat);
+  // console.log("selectedChat", selectedChat);
 
   return (
     <div className="p-2.5 border-b border-base-300">

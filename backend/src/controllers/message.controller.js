@@ -97,7 +97,34 @@ const sendMessage = asyncHandler(async (req, res) => {
 
 const getMessages = asyncHandler(async (req, res) => {
   const chatId = req.params.chatId;
-  const messages = await Message.find({ chatId })
+  const userId = req.user._id;
+
+  const chat = await Chat.findOne({
+    _id: chatId,
+    members: userId
+  });
+
+  if (!chat) {
+    throw new ApiError(404, "Chat not found");
+  }
+
+  // Find when this user last cleared the chat
+  const userClearHistory = chat.clearHistory.find(
+    history => history.userId.toString() === userId.toString()
+  );
+
+  // Build query based on clear history
+  const query = {
+    chatId,
+    isDeleted: false
+  };
+
+  // Only add timestamp check if user has cleared chat before
+  if (userClearHistory) {
+    query.createdAt = { $gt: userClearHistory.clearedAt };
+  }
+
+  const messages = await Message.find(query)
     .populate("sender", "fullName email phone")
     .sort({ createdAt: 1 });
 

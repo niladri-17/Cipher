@@ -9,6 +9,34 @@ export const useChatStore = create((set, get) => ({
   selectedChat: null,
   isChatsLoading: false,
   isMessagesLoading: false,
+  searchedResults: {},
+
+  startPrivateChat: async (data) => {
+    try {
+      const res = await axiosInstance.post("/chat/private", data);
+      return res.data.data;
+      // toast.success("Group created successfully");
+    } catch (error) {
+      if (error.response.status !== 401) toast.error("Failed to start chat");
+    }
+  },
+
+  activatePrivateChat: async (chatId) => {
+    try {
+      await axiosInstance.patch(`/chat/${chatId}/activate`);
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
+  startGroupChat: async (data) => {
+    try {
+      const res = await axiosInstance.post("/chat/group", data);
+      toast.success("Group created successfully");
+    } catch (error) {
+      if (error.response.status !== 401) toast.error("Failed to create group");
+    }
+  },
 
   getChats: async () => {
     set({ isChatsLoading: true });
@@ -23,6 +51,22 @@ export const useChatStore = create((set, get) => ({
         toast.error(error.response.data.message);
     } finally {
       set({ isChatsLoading: false });
+    }
+  },
+
+  searchAllChats: async (query) => {
+    // set({ isChatsLoading: true });
+    try {
+      const res = await axiosInstance.get(`/chat/all/search?query=${query}`);
+      // const res = await axiosInstance.get("/messages/users", {
+      //   skipErrorToast: true
+      // });
+      set({ searchedResults: res.data.data });
+    } catch (error) {
+      if (error.response.status !== 401)
+        toast.error(error.response.data.message);
+    } finally {
+      // set({ isChatsLoading: false });
     }
   },
 
