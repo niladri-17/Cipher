@@ -34,9 +34,9 @@ const MessageInput = () => {
     if (!text.trim() && !imagePreview) return;
 
     try {
-      if (messages.length === 0) {
-        activatePrivateChat(selectedChat._id);
-        getChats();
+      if (!selectedChat.isGroup && messages.length === 0) {
+        await activatePrivateChat(selectedChat._id);
+        await getChats();
       }
       await sendMessage({
         text: text.trim(),
