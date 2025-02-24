@@ -6,22 +6,23 @@ import { io, app } from "./lib/socket.js";
 
 // cors middleware to allow cross-origin requests
 const allowedOrigins = [
-  "http://localhost:5173",
-  "https://projects.niladribasak.in/cipher",
+  'http://localhost:5173',
+  'https://projects.niladribasak.in/cipher',
+  'https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app'
 ];
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) { // has no origin (for mobile apps) or origin is present in allowed origin
-        callback(null, true); // Allow request
-      } else {
-        callback(new Error("Not allowed by CORS")); // Block request
-      }
-    },
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
