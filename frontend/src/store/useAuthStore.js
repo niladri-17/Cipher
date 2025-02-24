@@ -7,8 +7,8 @@ import axiosInstance from "../lib/axios.js";
 
 const BASE_URL =
   import.meta.env.MODE === "development"
-    // ? "http://localhost:5001"
-    ? "https://cipher-mern-chat-app.vercel.app"
+    ? // ? "http://localhost:5001"
+      "https://cipher-mern-chat-app.vercel.app"
     : "https://cipher-mern-chat-app.vercel.app";
 
 // Create a slice for persisted state
@@ -135,15 +135,27 @@ export const useAuthStore = create(
         const { authUser } = get();
         if (!authUser || get().socket?.connected) return;
 
+        // const socket = io(BASE_URL, {
+        //   query: {
+        //     userId: authUser._id,
+        //   },
+        // });
+
         const socket = io(BASE_URL, {
           query: {
             userId: authUser._id,
           },
+          path: "/socket.io/",
+          withCredentials: true,
+          transports: ["websocket", "polling"],
+          reconnectionAttempts: 5,
+          reconnectionDelay: 1000,
+          autoConnect: true,
         });
 
         // Add error handling
-        socket.on('connect_error', (error) => {
-          console.error('Socket connection error:', error);
+        socket.on("connect_error", (error) => {
+          console.error("Socket connection error:", error);
         });
 
         socket.connect();
