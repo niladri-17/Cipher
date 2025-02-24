@@ -147,5 +147,30 @@ export const useChatStore = create((set, get) => ({
     if (socket) socket.off("newMessage");
   },
 
-  setSelectedChat: (selectedChat) => set({ selectedChat }),
+  openChat: (chatId) => {
+    const userId = useAuthStore.getState().authUser._id;
+
+    // Mark this chat as the active one
+    // setActiveChat(chatId);
+
+    const socket = useAuthStore.getState().socket;
+
+    // Notify server that user joined this chat
+    socket.emit("joinChat", { chatId, userId });
+
+    // Cleanup function when component unmounts or chat changes
+    return () => {
+      socket.emit("leaveChat", { chatId, userId });
+    };
+  },
+
+  setSelectedChat: (selectedChat) => {
+    set({ selectedChat });
+
+    set((state) => ({
+      chats: state.chats.map((chat) =>
+        chat._id === selectedChat._id ? { ...chat, unseenCount: 0 } : chat
+      ),
+    }));
+  },
 }));

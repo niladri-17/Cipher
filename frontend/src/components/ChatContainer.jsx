@@ -18,9 +18,16 @@ const ChatContainer = () => {
     selectedChat,
     subscribeToMessages,
     unsubscribeFromMessages,
+    openChat,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
+
+  useEffect(() => {
+    const cleanup = openChat(selectedChat._id);
+
+    return cleanup;
+  }, [openChat, selectedChat]);
 
   useEffect(() => {
     getMessages(selectedChat._id);

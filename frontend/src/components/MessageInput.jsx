@@ -9,6 +9,7 @@ const MessageInput = () => {
   const fileInputRef = useRef(null);
   const { messages, selectedChat, activatePrivateChat, sendMessage, getChats } =
     useChatStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -32,7 +33,7 @@ const MessageInput = () => {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!text.trim() && !imagePreview) return;
-
+    setIsSubmitting(true);
     try {
       if (!selectedChat.isGroup && messages.length === 0) {
         await activatePrivateChat(selectedChat._id);
@@ -49,6 +50,8 @@ const MessageInput = () => {
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
       console.error("Failed to send message:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -103,7 +106,7 @@ const MessageInput = () => {
         <button
           type="submit"
           className="btn btn-sm btn-circle"
-          disabled={!text.trim() && !imagePreview}
+          disabled={(!text.trim() && !imagePreview) || isSubmitting}
         >
           <Send size={22} />
         </button>

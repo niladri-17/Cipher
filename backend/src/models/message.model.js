@@ -15,8 +15,11 @@ const messageSchema = new mongoose.Schema(
     text: { type: String },
     media: [{ type: String }], // Image, video, file URL
     seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // Users who read the message
-    isDeleted: { type: Boolean, default: false },
-    isVisible: { type: Boolean, default: true },
+    isDeleted: {
+      type: Number,
+      enum: [0, 1, 2],
+      default: 0
+    } // 0 -> not deleted, 1 -> deleted for me, 2 -> deleted for everyone
   },
   { timestamps: true }
 );

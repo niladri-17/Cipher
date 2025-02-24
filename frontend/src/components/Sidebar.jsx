@@ -4,6 +4,7 @@ import { useAuthStore } from "../store/useAuthStore";
 import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { Users, MessageSquarePlus, X, ArrowLeft } from "lucide-react";
 import GroupModal from "./GroupModal";
+import { formatMessageTime } from "../lib/utils";
 
 const Sidebar = () => {
   const {
@@ -42,6 +43,8 @@ const Sidebar = () => {
 
     return () => clearTimeout(delayDebounce);
   }, [query, searchAllChats]);
+
+  console.log(chats);
 
   const filteredChats = showOnlineOnly
     ? chats.filter((chat) => {
@@ -351,23 +354,38 @@ const Sidebar = () => {
                 </div>
 
                 {/* User info - only visible on larger screens */}
-                <div className="text-left min-w-0">
-                  <div className="font-medium truncate">
-                    {chat.isGroup ? chat.groupName : chatUser.fullName}
+                <div className="text-left w-full">
+                  <div className="flex justify-between">
+                    <div className="font-medium truncate">
+                      {chat.isGroup ? chat.groupName : chatUser.fullName}
+                    </div>
+                    <div className="text-[12px] font-medium">
+                      {formatMessageTime(chat.lastMessage?.createdAt)}
+                    </div>
                   </div>
                   {
-                    <div className="text-sm text-zinc-400 min-h-5">
-                      {chat.lastMessage &&
-                        (chat.isGroup ? (
-                          <div className="truncate">
-                            {chat.lastMessage.sender.fullName}:{" "}
-                            {chat.lastMessage.text}
-                          </div>
-                        ) : (
-                          <div className="truncate">
-                            {chat.lastMessage.text}
-                          </div>
-                        ))}
+                    <div className="flex justify-between">
+                      <div className="text-sm text-zinc-400 min-h-5">
+                        {chat.lastMessage &&
+                          (chat.isGroup ? (
+                            <div className="truncate">
+                              {chat.lastMessage.sender.fullName}:{" "}
+                              {chat.lastMessage.text}
+                            </div>
+                          ) : (
+                            <div className="truncate">
+                              {chat.lastMessage.text}
+                            </div>
+                          ))}
+                      </div>
+                      {chat.unseenCount > 0 && (
+                        <div
+                          className="relative bottom-0 right-0 size-4 bg-green-500 rounded-full
+              flex items-center justify-center text-xs text-black text-sm"
+                        >
+                          {chat.unseenCount}
+                        </div>
+                      )}
                     </div>
                   }
                 </div>

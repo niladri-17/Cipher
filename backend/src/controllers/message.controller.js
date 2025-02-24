@@ -5,7 +5,11 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import mongoose from "mongoose";
-import { getReceiverSocketId, io } from "../lib/socket.js";
+import {
+  getReceiverSocketId,
+  getActiveUsersInChat,
+  io,
+} from "../lib/socket.js";
 
 const sendMessage = asyncHandler(async (req, res) => {
   const session = await mongoose.startSession();
@@ -35,7 +39,25 @@ const sendMessage = asyncHandler(async (req, res) => {
       media = uploadedMedia.url; // Set the media URL from Cloudinary
     }
 
-    // 1. Create the message with session
+    // Get active users for this chat
+    const activeUsers = getActiveUsersInChat(chatId); // You'll need to implement this function
+
+    // Initialize seenBy with the sender
+    const seenBy = [sender];
+
+    // Add any active users to seenBy (except sender)
+    if (activeUsers && activeUsers.length > 0) {
+      activeUsers.forEach((userId) => {
+        if (
+          userId.toString() !== sender.toString() &&
+          !seenBy.includes(userId)
+        ) {
+          seenBy.push(userId);
+        }
+      });
+    }
+
+    // 1. Create the message with session and the enhanced seenBy array
     const newMessage = await Message.create(
       [
         {
@@ -43,7 +65,7 @@ const sendMessage = asyncHandler(async (req, res) => {
           sender,
           text,
           media,
-          seenBy: [sender], // Mark as seen by sender
+          seenBy, // Now includes sender and any active users
         },
       ],
       { session }
@@ -76,12 +98,13 @@ const sendMessage = asyncHandler(async (req, res) => {
           path: "sender",
           select: "fullName profilePic",
         },
-      });
+      })
+      .lean();
 
     // If the chat exists and has members, send notifications to all members
     if (chat && chat.members?.length > 0) {
       // Send the new message to all members except the sender
-      chat.members.forEach((member) => {
+      chat.members.forEach(async (member) => {
         if (member._id.toString() !== sender.toString()) {
           // Ensure IDs are strings for comparison
           const receiverSocketId = getReceiverSocketId(member._id.toString());
@@ -89,8 +112,37 @@ const sendMessage = asyncHandler(async (req, res) => {
             // Emit "newMessage" event with the message
             io.to(receiverSocketId).emit("newMessage", populatedMessage);
 
+            let lastSeenTime = new Date(0); // Default to oldest possible date
+
+            // Check if lastSeen exists and is an array
+            if (Array.isArray(chat.lastSeen)) {
+              // Find the entry manually with a for loop to avoid potential issues with .find()
+              for (let i = 0; i < chat.lastSeen.length; i++) {
+                const entry = chat.lastSeen[i];
+                if (
+                  entry &&
+                  entry.userId &&
+                  entry.userId.toString() === userId
+                ) {
+                  if (entry.lastSeenAt) {
+                    lastSeenTime = new Date(entry.lastSeenAt);
+                  }
+                  break;
+                }
+              }
+            }
+
+            const unseenCount = await Message.countDocuments({
+              chatId: chat._id,
+              createdAt: { $gt: lastSeenTime },
+              seenBy: { $ne: member._id },
+            });
+
+            chat.unseenCount = unseenCount; // Add unseenCount field to chat
+
             // Emit "newChat" event with the chat details
             io.to(receiverSocketId).emit("newChat", chat);
+            console.log(chat);
           }
         }
       });

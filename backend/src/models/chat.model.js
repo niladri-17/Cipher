@@ -55,6 +55,18 @@ const chatSchema = new mongoose.Schema(
         },
       },
     ],
+    lastSeen: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        lastSeenAt: {
+          type: Date,
+          default: null,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

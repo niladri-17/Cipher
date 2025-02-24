@@ -6,14 +6,11 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 
 const getAllChats = asyncHandler(async (req, res) => {
-  const userId = req.user._id; // Authenticated user's ID
+  const userId = req.user._id.toString(); // Convert ObjectId to string
 
-  // ✅ Fetch chats where the user is a participant
   const chats = await Chat.find({
-    // User must be a member AND not in inactive list
     members: userId,
     inactive: { $ne: userId },
-    // No delete history for this user
     $nor: [
       {
         deleteHistory: {
@@ -34,7 +31,40 @@ const getAllChats = asyncHandler(async (req, res) => {
         select: "fullName profilePic",
       },
     })
-    .sort({ updatedAt: -1 });
+    .sort({ updatedAt: -1 })
+    .lean(); // Converts Mongoose objects to plain JavaScript objects
+
+  // Calculate unseen message count for each chat
+  await Promise.all(
+    chats.map(async (chat) => {
+      // More robust way to handle the lastSeen array
+      let lastSeenTime = new Date(0); // Default to oldest possible date
+
+      // Check if lastSeen exists and is an array
+      if (Array.isArray(chat.lastSeen)) {
+        // Find the entry manually with a for loop to avoid potential issues with .find()
+        for (let i = 0; i < chat.lastSeen.length; i++) {
+          const entry = chat.lastSeen[i];
+          if (entry && entry.userId && entry.userId.toString() === userId) {
+            if (entry.lastSeenAt) {
+              lastSeenTime = new Date(entry.lastSeenAt);
+            }
+            break;
+          }
+        }
+      }
+
+      const unseenCount = await Message.countDocuments({
+        chatId: chat._id,
+        createdAt: { $gt: lastSeenTime },
+        seenBy: { $ne: userId },
+      });
+
+      chat.unseenCount = unseenCount; // Add unseenCount field to chat
+    })
+  );
+
+  // console.log(chats); // Now each chat includes unseenCount
 
   return res.status(200).json(new ApiResponse(200, chats, "Chats fetched"));
 });
