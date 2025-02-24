@@ -12,23 +12,31 @@ const allowedOrigins = [
   "https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app",
 ];
 
+// app.use(
+//   cors({
+//     origin: (origin, callback) => {
+//       // For development tools like Postman
+//       if (!origin) {
+//         return callback(null, true);
+//       }
+
+//       if (allowedOrigins.includes(origin)) {
+//         callback(null, origin); // Important: reflect the actual origin
+//       } else {
+//         callback(new Error("Not allowed by CORS"));
+//       }
+//     },
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // For development tools like Postman
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (allowedOrigins.includes(origin)) {
-        callback(null, origin); // Important: reflect the actual origin
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
+    origin: "https://projects.niladribasak.in",
+    credentials: true, // allows cookies, authorization headers, etc to be passed from client
   })
 );
 
