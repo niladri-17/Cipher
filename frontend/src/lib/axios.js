@@ -3,10 +3,9 @@ import { useAuthStore } from "../store/useAuthStore.js";
 import toast from "react-hot-toast";
 import { navigate } from "./navigation";
 
-const PROD_URL =
-  "https://cipher-mern-chat-app.vercel.app/api";
-const DEV_URL = "https://cipher-mern-chat-app.vercel.app/api";
-// const DEV_URL = "http://localhost:5001/api";
+// const PROD_URL = "https://cipher-mern-chat-app.vercel.app/api";
+const PROD_URL = "/api";
+const DEV_URL = "http://localhost:5001/api";
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.PROD ? PROD_URL : DEV_URL,
@@ -56,7 +55,8 @@ axiosInstance.interceptors.response.use(
       error.response.status !== 401 ||
       originalRequest._retry ||
       originalRequest.url === "/auth/refresh-token" ||
-      originalRequest.url === "/auth/login"
+      originalRequest.url === "/auth/login" ||
+      originalRequest.url === "/socket.io/"
     ) {
       return Promise.reject(error);
     }

@@ -5,11 +5,15 @@ import { io } from "socket.io-client";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../lib/axios.js";
 
+// const BASE_URL =
+//   import.meta.env.MODE === "development"
+//      ? "http://localhost:5001"
+//     : "https://cipher-mern-chat-app.vercel.app";
+
 const BASE_URL =
   import.meta.env.MODE === "development"
-    ? // ? "http://localhost:5001"
-      "https://cipher-mern-chat-app.vercel.app"
-    : "https://cipher-mern-chat-app.vercel.app";
+     ? "http://localhost:5001"
+    : "/";
 
 // Create a slice for persisted state
 const createPersistedSlice = (set, get) => ({
@@ -135,21 +139,21 @@ export const useAuthStore = create(
         const { authUser } = get();
         if (!authUser || get().socket?.connected) return;
 
-        // const socket = io(BASE_URL, {
-        //   query: {
-        //     userId: authUser._id,
-        //   },
-        // });
-
         const socket = io(BASE_URL, {
           query: {
             userId: authUser._id,
           },
-          withCredentials: true,
-          reconnectionAttempts: 5,
-          reconnectionDelay: 1000,
-          autoConnect: true,
         });
+
+        // const socket = io(BASE_URL, {
+        //   query: {
+        //     userId: authUser._id,
+        //   },
+        //   withCredentials: true,
+        //   reconnectionAttempts: 5,
+        //   reconnectionDelay: 1000,
+        //   autoConnect: true,
+        // });
 
         // Add error handling
         socket.on("connect_error", (error) => {
