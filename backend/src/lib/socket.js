@@ -7,7 +7,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: ["https://projects.niladribasak.in"],
+    origin: ["http://localhost:5173", "https://projects.niladribasak.in"],
   },
 });
 // const io = new Server(server, {
