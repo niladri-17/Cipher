@@ -8,7 +8,7 @@ const SidebarSkeleton = () => {
 
   return (
     <aside
-      className="h-full w-20 lg:w-72 border-r border-base-300
+      className="h-full w-full md:w-72 border-r border-base-300
     flex flex-col transition-all duration-200"
     >
       {/* Header */}
@@ -20,7 +20,7 @@ const SidebarSkeleton = () => {
               <MessageSquarePlus />
             </GroupModal>
           </div>
-          <span className="font-medium hidden lg:block">Chats</span>
+          <span className="font-medium">Chats</span>
         </div>
       </div>
 
@@ -34,9 +34,9 @@ const SidebarSkeleton = () => {
             </div>
 
             {/* User info skeleton - only visible on larger screens */}
-            <div className="hidden lg:block text-left min-w-0 flex-1">
-              <div className="skeleton h-4 w-32 mb-2" />
-              <div className="skeleton h-3 w-16" />
+            <div className="text-left min-w-0 flex-1">
+              <div className="skeleton h-4 w-full mb-2" />
+              <div className="skeleton h-3 w-1/2" />
             </div>
           </div>
         ))}

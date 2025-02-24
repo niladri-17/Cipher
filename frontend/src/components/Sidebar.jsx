@@ -44,12 +44,15 @@ const Sidebar = () => {
   }, [query, searchAllChats]);
 
   const filteredChats = showOnlineOnly
-    ? chats.filter((chat) =>
-        onlineUsers.includes(
-          !chat.isGroup &&
-            chat.members.find((member) => member._id !== authUser._id)
-        )
-      )
+    ? chats.filter((chat) => {
+        if (chat.isGroup) return false; // Skip group chats
+
+        const otherMember = chat.members.find(
+          (member) => member._id !== authUser._id
+        );
+
+        return otherMember && onlineUsers.includes(otherMember._id);
+      })
     : chats;
 
   if (isChatsLoading) return <SidebarSkeleton />;
@@ -57,7 +60,7 @@ const Sidebar = () => {
   return (
     <aside
       className={`${
-        selectedChat ? "hidden" : "block"
+        selectedChat ? "hidden md:flex" : "block"
       } h-full w-full md:w-72 border-r border-base-300 flex flex-col transition-all duration-200`}
     >
       <div className="border-b border-base-300 w-full p-5">
@@ -335,12 +338,16 @@ const Sidebar = () => {
                     alt={chat.name}
                     className="size-12 object-cover rounded-full"
                   />
-                  {!chat.isGroup && onlineUsers.includes(chat._id) && (
-                    <span
-                      className="absolute bottom-0 right-0 size-3 bg-green-500
+                  {!chat.isGroup &&
+                    onlineUsers.includes(
+                      chat.members.find((member) => member._id !== authUser._id)
+                        ._id
+                    ) && (
+                      <span
+                        className="absolute bottom-0 right-0 size-3 bg-green-500
                             rounded-full ring-2 ring-zinc-900"
-                    />
-                  )}
+                      />
+                    )}
                 </div>
 
                 {/* User info - only visible on larger screens */}

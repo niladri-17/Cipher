@@ -67,14 +67,30 @@ const sendMessage = asyncHandler(async (req, res) => {
     ).populate("sender", "fullName profilePic");
 
     // Handle socket events after successful transaction
-    const chat = await Chat.findById(chatId);
-    if (chat) {
-      // Send to all members except sender
-      chat.members.forEach((memberId) => {
-        if (memberId.toString() !== sender.toString()) {
-          const receiverSocketId = getReceiverSocketId(memberId);
+    const chat = await Chat.findById(chatId)
+      .populate("members", "fullName email profilePic status")
+      .populate({
+        path: "lastMessage",
+        select: "sender text createdAt",
+        populate: {
+          path: "sender",
+          select: "fullName profilePic",
+        },
+      });
+
+    // If the chat exists and has members, send notifications to all members
+    if (chat && chat.members?.length > 0) {
+      // Send the new message to all members except the sender
+      chat.members.forEach((member) => {
+        if (member._id.toString() !== sender.toString()) {
+          // Ensure IDs are strings for comparison
+          const receiverSocketId = getReceiverSocketId(member._id.toString());
           if (receiverSocketId) {
+            // Emit "newMessage" event with the message
             io.to(receiverSocketId).emit("newMessage", populatedMessage);
+
+            // Emit "newChat" event with the chat details
+            io.to(receiverSocketId).emit("newChat", chat);
           }
         }
       });
@@ -101,7 +117,7 @@ const getMessages = asyncHandler(async (req, res) => {
 
   const chat = await Chat.findOne({
     _id: chatId,
-    members: userId
+    members: userId,
   });
 
   if (!chat) {
@@ -110,13 +126,13 @@ const getMessages = asyncHandler(async (req, res) => {
 
   // Find when this user last cleared the chat
   const userClearHistory = chat.clearHistory.find(
-    history => history.userId.toString() === userId.toString()
+    (history) => history.userId.toString() === userId.toString()
   );
 
   // Build query based on clear history
   const query = {
     chatId,
-    isDeleted: false
+    isDeleted: false,
   };
 
   // Only add timestamp check if user has cleared chat before

@@ -14,31 +14,38 @@ import { useEffect } from "react";
 import { Loader } from "lucide-react";
 import { Toaster } from "react-hot-toast";
 import { setNavigate } from "./lib/navigation.js";
+import { useChatStore } from "./store/useChatStore.js";
 
 const App = () => {
   const { authUser, onlineUsers, connectSocket, disconnectSocket } =
     useAuthStore();
+  const { subscribeToChats, unsubscribeFromChats } = useChatStore();
   const { theme } = useThemeStore();
   const navigate = useNavigate();
-
-  console.log({ onlineUsers });
 
   // useEffect(() => {
   //   checkAuth();
   // }, [checkAuth]);
 
   useEffect(() => {
-    connectSocket();
-    return () => {
-      disconnectSocket();
-    };
-  }, [connectSocket, disconnectSocket]);
-
-  useEffect(() => {
     setNavigate(navigate); // Store global navigate
   }, [navigate]);
 
-  console.log({ authUser });
+  useEffect(() => {
+    const initializeSocket = async () => {
+      await connectSocket();
+      await subscribeToChats();
+    };
+
+    initializeSocket();
+
+    return () => {
+      disconnectSocket();
+      unsubscribeFromChats();
+    };
+  }, [connectSocket, disconnectSocket, subscribeToChats, unsubscribeFromChats]);
+
+  console.log({ onlineUsers });
 
   // if (!authUser)
   //   return (

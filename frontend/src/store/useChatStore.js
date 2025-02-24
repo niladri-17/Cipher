@@ -95,6 +95,36 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  subscribeToChats: () => {
+    const { chats } = get();
+    if (!chats) return;
+
+    const socket = useAuthStore.getState().socket;
+    socket.on("newChat", (newChat) => {
+      set((state) => {
+        // Check if this chat already exists in our list
+        const existingChatIndex = state.chats.findIndex(
+          (chat) => chat._id === newChat._id
+        );
+
+        if (existingChatIndex !== -1) {
+          // Chat exists - replace it with updated version
+          const updatedChats = [...state.chats];
+          updatedChats[existingChatIndex] = newChat;
+          return { chats: updatedChats };
+        } else {
+          // New chat - add it to the beginning of the array
+          return { chats: [newChat, ...state.chats] };
+        }
+      });
+    });
+  },
+
+  unsubscribeFromChats: () => {
+    const socket = useAuthStore.getState().socket;
+    if (socket) socket.off("newChat");
+  },
+
   subscribeToMessages: () => {
     const { selectedChat } = get();
     if (!selectedChat) return;
@@ -114,7 +144,7 @@ export const useChatStore = create((set, get) => ({
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
-    socket.off("newMessage");
+    if (socket) socket.off("newMessage");
   },
 
   setSelectedChat: (selectedChat) => set({ selectedChat }),

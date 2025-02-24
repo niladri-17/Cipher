@@ -263,6 +263,33 @@ const startGroupChat = asyncHandler(async (req, res) => {
       createdBy: currentUserId,
     });
 
+    const chat = await Chat.findById(newGroup._id)
+      .populate("members", "fullName email profilePic status")
+      .populate({
+        path: "lastMessage",
+        select: "sender text createdAt",
+        populate: {
+          path: "sender",
+          select: "fullName profilePic",
+        },
+      });
+
+    if (chat) {
+      // Send the new message to all members except the sender
+      chat.members.forEach((memberId) => {
+        if (memberId.toString() !== sender.toString()) {
+          const receiverSocketId = getReceiverSocketId(memberId);
+          if (receiverSocketId) {
+            // Emit "newMessage" event with the message
+            io.to(receiverSocketId).emit("newMessage", populatedMessage);
+
+            // Emit "newChat" event with the chat details
+            io.to(receiverSocketId).emit("newChat", chat);
+          }
+        }
+      });
+    }
+
     return res
       .status(201)
       .json(new ApiResponse(201, newGroup, "Group created"));

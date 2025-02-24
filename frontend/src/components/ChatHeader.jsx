@@ -16,8 +16,20 @@ const ChatHeader = () => {
           <div className="avatar">
             <div className="size-10 rounded-full relative">
               <img
-                src={selectedChat.profilePic || "/avatar.png"}
-                alt={selectedChat.fullName}
+                src={
+                  !selectedChat.isGroup
+                    ? selectedChat.members.find(
+                        (member) => member._id !== authUser._id
+                      ).profilePic
+                    : selectedChat.groupAvatar
+                }
+                alt={
+                  !selectedChat.isGroup
+                    ? selectedChat.members.find(
+                        (member) => member._id !== authUser._id
+                      ).fullName
+                    : selectedChat.groupName
+                }
               />
             </div>
           </div>
@@ -37,7 +49,7 @@ const ChatHeader = () => {
                   {onlineUsers.includes(
                     selectedChat.members.find(
                       (member) => member._id !== authUser._id
-                    )
+                    )?._id
                   )
                     ? "Online"
                     : "Offline"}

@@ -144,24 +144,9 @@ export const useAuthStore = create(
             userId: authUser._id,
           },
         });
-
-        // const socket = io(BASE_URL, {
-        //   query: {
-        //     userId: authUser._id,
-        //   },
-        //   withCredentials: true,
-        //   reconnectionAttempts: 5,
-        //   reconnectionDelay: 1000,
-        //   autoConnect: true,
-        // });
-
-        // Add error handling
-        socket.on("connect_error", (error) => {
-          console.error("Socket connection error:", error);
-        });
-
         socket.connect();
-        set({ socket });
+
+        set({ socket: socket });
 
         socket.on("getOnlineUsers", (userIds) => {
           set({ onlineUsers: userIds });
