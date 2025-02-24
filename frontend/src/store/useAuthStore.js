@@ -135,10 +135,24 @@ export const useAuthStore = create(
         const { authUser } = get();
         if (!authUser || get().socket?.connected) return;
 
+        // const socket = io(BASE_URL, {
+        //   query: {
+        //     userId: authUser._id,
+        //   },
+        // });
+
         const socket = io(BASE_URL, {
           query: {
             userId: authUser._id,
           },
+          withCredentials: true,
+          transports: ['websocket', 'polling'],
+          path: '/socket.io/'  // Make sure this matches your server configuration
+        });
+
+        // Add error handling
+        socket.on('connect_error', (error) => {
+          console.error('Socket connection error:', error);
         });
 
         socket.connect();
