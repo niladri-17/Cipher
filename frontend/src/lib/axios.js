@@ -3,13 +3,12 @@ import { useAuthStore } from "../store/useAuthStore.js";
 import toast from "react-hot-toast";
 import { navigate } from "./navigation";
 
-// Create axios instance
+const PROD_URL =
+  "https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app/api";
+const DEV_URL = "http://localhost:5001/api";
+
 export const axiosInstance = axios.create({
-  // baseURL:
-  //   import.meta.env.MODE === "development"
-  //     ? "http://localhost:5001/api"
-  //     : "/api",
-  baseURL: "https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app/api",
+  baseURL: import.meta.env.PROD ? PROD_URL : DEV_URL,
   withCredentials: true,
 });
 
