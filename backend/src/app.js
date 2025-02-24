@@ -21,41 +21,22 @@ import { io, app } from "./lib/socket.js";
 //   })
 // );
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://projects.niladribasak.in",
-];
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true, // Allows cookies & authentication headers
-  })
-);
+// const allowedOrigins = [
+//   "http://localhost:5173",  // Local development
+//   "https://projects.niladribasak.in" // Your frontend in production
+// ];
 
-// Handle OPTIONS preflight requests manually
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-    res.header(
-      "Access-Control-Allow-Methods",
-      "GET, POST, PUT, DELETE, PATCH, OPTIONS"
-    );
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    res.header("Access-Control-Allow-Credentials", "true");
-  }
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  next();
-});
+// // Enable CORS
+// app.use(cors({
+//   origin: allowedOrigins,
+//   credentials: true, // Allows cookies and authentication headers
+//   methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+//   allowedHeaders: "Content-Type, Authorization"
+// }));
+
+// // Handle preflight requests
+// app.options("*", cors());
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
