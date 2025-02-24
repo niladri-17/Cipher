@@ -27,7 +27,7 @@ app.use(
 );
 
 // Handle preflight requests
-app.options("*", cors());
+// app.options("*", cors());
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
