@@ -162,12 +162,12 @@ const Sidebar = () => {
                         >
                           <div className="relative mx-auto md:mx-0">
                             <img
-                              src="/cipher/avatar.png"
-                              // src={
-                              //   chat.isGroup
-                              //     ? chat?.groupAvatar || "/cipher/avatar.png"
-                              //     : chatUser.profilePic || "/cipher/avatar.png"
-                              // }
+                              // src="/avatar.png"
+                              src={
+                                chat.isGroup
+                                  ? chat?.groupAvatar || "/avatar.png"
+                                  : chatUser.profilePic || "/avatar.png"
+                              }
                               alt={chat.name}
                               className="size-12 object-cover rounded-full"
                             />
@@ -241,12 +241,8 @@ const Sidebar = () => {
                         >
                           <div className="relative mx-auto md:mx-0">
                             <img
-                              src="/cipher/avatar.png"
-                              // src={
-                              //   chat.isGroup
-                              //     ? chat?.groupAvatar || "/cipher/avatar.png"
-                              //     : chatUser.profilePic || "/cipher/avatar.png"
-                              // }
+                              // src="/avatar.png"
+                              src={user.profilePic || "/avatar.png"}
                               alt={user.fullName}
                               className="size-12 object-cover rounded-full"
                             />
@@ -326,12 +322,12 @@ const Sidebar = () => {
               >
                 <div className="relative mx-auto md:mx-0">
                   <img
-                    src="/cipher/avatar.png"
-                    // src={
-                    //   chat.isGroup
-                    //     ? chat?.groupAvatar || "/cipher/avatar.png"
-                    //     : chatUser.profilePic || "/cipher/avatar.png"
-                    // }
+                    // src="/avatar.png"
+                    src={
+                      chat.isGroup
+                        ? chat?.groupAvatar || "/avatar.png"
+                        : chatUser.profilePic || "/avatar.png"
+                    }
                     alt={chat.name}
                     className="size-12 object-cover rounded-full"
                   />
