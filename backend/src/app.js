@@ -3,6 +3,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import errorHandler from "./middlewares/error.middleware.js";
 import { io, app } from "./lib/socket.js";
+import path from "path";
 
 // cors middleware to allow cross-origin requests
 app.use(
@@ -29,6 +30,8 @@ app.use(
 // Handle preflight requests
 // app.options("*", cors());
 
+const __dirname = path.resolve();
+
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 app.use(express.static("public"));
@@ -45,6 +48,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/message", messageRoutes);
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname, "../frontend/dist")));
+
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
+  });
+}
 
 // Error handling middleware
 app.use(errorHandler);
