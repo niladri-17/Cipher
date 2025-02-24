@@ -32,13 +32,40 @@ const allowedOrigins = [
 //   })
 // );
 
+// app.use(
+//   cors({
+//     // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
+//     origin: "https://projects.niladribasak.in",
+//     credentials: true, // allows cookies, authorization headers, etc to be passed from client
+//   })
+// );
+
+// CORS Middleware for Express
 app.use(
   cors({
-    // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
     origin: "https://projects.niladribasak.in",
-    credentials: true, // allows cookies, authorization headers, etc to be passed from client
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+
+// Additional headers for CORS preflight
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://projects.niladribasak.in");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+  );
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.header("Access-Control-Allow-Credentials", true);
+
+  // Handle OPTIONS method
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));

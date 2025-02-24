@@ -7,14 +7,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      // "http://localhost:5173",
-      "https://projects.niladribasak.in",
-      // "https://projects.niladribasak.in/cipher"
-    ],
-    credentials: true, // If you're using credentials
-    methods: ["GET", "POST"]
-  }
+    origin: "https://projects.niladribasak.in",
+    methods: ["GET", "POST", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  },
 });
 
 export function getReceiverSocketId(userId) {
