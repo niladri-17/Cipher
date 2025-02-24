@@ -12,7 +12,7 @@ import jwt from "jsonwebtoken";
 const options = {
   httpOnly: true, // This cookie cannot be accessed by client side javascript
   secure: true, // This cookie can only be sent over https
-  sameSite: "strict", // This cookie is not sent with cross-origin requests
+  sameSite: "none", // This cookie will be sent with cross-origin requests
 };
 
 const generateAccessAndRefereshTokens = async (user, session) => {

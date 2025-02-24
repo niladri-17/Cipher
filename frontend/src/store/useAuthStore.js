@@ -7,8 +7,8 @@ import axiosInstance from "../lib/axios.js";
 
 const BASE_URL =
   import.meta.env.MODE === "development"
-    ? "http://localhost:5001"
-    // ? "https://cipher-mern-chat-app.vercel.app"
+    // ? "http://localhost:5001"
+    ? "https://cipher-mern-chat-app.vercel.app"
     : "https://cipher-mern-chat-app.vercel.app";
 
 // Create a slice for persisted state
