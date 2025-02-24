@@ -8,7 +8,7 @@ import { io, app } from "./lib/socket.js";
 app.use(
   cors({
     // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
-    origin: "https://projects.niladribasak.in",
+    origin: ["http://localhost:5173", "https://projects.niladribasak.in"],
     credentials: true, // allows cookies, authorization headers, etc to be passed from client
   })
 );
