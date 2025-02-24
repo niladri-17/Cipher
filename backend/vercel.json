@@ -9,33 +9,15 @@
   "routes": [
     {
       "src": "/socket.io/(.*)",
-      "dest": "src/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "http://localhost:5173, https://projects.niladribasak.in",
-        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, authorization",
-        "Access-Control-Allow-Credentials": "true"
-      }
+      "dest": "src/index.js"
     },
     {
       "src": "/api/(.*)",
-      "dest": "src/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "http://localhost:5173, https://projects.niladribasak.in",
-        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, authorization",
-        "Access-Control-Allow-Credentials": "true"
-      }
+      "dest": "src/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "src/index.js",
-      "headers": {
-        "Access-Control-Allow-Origin": "http://localhost:5173, https://projects.niladribasak.in",
-        "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-        "Access-Control-Allow-Headers": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, authorization",
-        "Access-Control-Allow-Credentials": "true"
-      }
+      "dest": "src/index.js"
     }
   ]
 }

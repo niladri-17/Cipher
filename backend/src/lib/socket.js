@@ -9,10 +9,8 @@ const io = new Server(server, {
   cors: {
     origin: ["http://localhost:5173", "https://projects.niladribasak.in"],
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
   },
-  path: "/socket.io/",
-  transports: ["websocket", "polling"]
 });
 
 export function getReceiverSocketId(userId) {

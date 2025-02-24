@@ -5,26 +5,26 @@ import errorHandler from "./middlewares/error.middleware.js";
 import { io, app } from "./lib/socket.js";
 
 // cors middleware to allow cross-origin requests
-// app.use(
-//   cors({
-//     // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
-//     origin: ["http://localhost:5173", "https://projects.niladribasak.in"],
-//     credentials: true, // allows cookies, authorization headers, etc to be passed from client
-//   })
-// );
-
 app.use(
   cors({
+    // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
     origin: ["http://localhost:5173", "https://projects.niladribasak.in"],
-    methods: ["GET", "POST", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: [
-      "my-custom-header",
-      "authorization",
-      "Access-Control-Allow-Origin",
-    ],
+    credentials: true, // allows cookies, authorization headers, etc to be passed from client
   })
 );
+
+// app.use(
+//   cors({
+//     origin: ["http://localhost:5173", "https://projects.niladribasak.in"],
+//     methods: ["GET", "POST", "OPTIONS"],
+//     credentials: true,
+//     allowedHeaders: [
+//       "my-custom-header",
+//       "authorization",
+//       "Access-Control-Allow-Origin",
+//     ],
+//   })
+// );
 
 // Handle preflight requests
 // app.options("*", cors());
