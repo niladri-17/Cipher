@@ -5,11 +5,21 @@ import errorHandler from "./middlewares/error.middleware.js";
 import { io, app } from "./lib/socket.js";
 
 // cors middleware to allow cross-origin requests
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://projects.niladribasak.in/cipher",
+];
+
 app.use(
   cors({
-    // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
-    origin: "http://localhost:5173",
-    credentials: true, // allows cookies, authorization headers, etc to be passed from client
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) { // has no origin (for mobile apps) or origin is present in allowed origin
+        callback(null, true); // Allow request
+      } else {
+        callback(new Error("Not allowed by CORS")); // Block request
+      }
+    },
+    credentials: true,
   })
 );
 

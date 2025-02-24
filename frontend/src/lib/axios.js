@@ -5,10 +5,11 @@ import { navigate } from "./navigation";
 
 // Create axios instance
 export const axiosInstance = axios.create({
-  baseURL:
-    import.meta.env.MODE === "development"
-      ? "http://localhost:5001/api"
-      : "/api",
+  // baseURL:
+  //   import.meta.env.MODE === "development"
+  //     ? "http://localhost:5001/api"
+  //     : "/api",
+  baseURL: "https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app/api",
   withCredentials: true,
 });
 
