@@ -55,7 +55,11 @@ const Sidebar = () => {
   if (isChatsLoading) return <SidebarSkeleton />;
 
   return (
-    <aside className="h-full w-20 md:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
+    <aside
+      className={`${
+        selectedChat ? "hidden" : "block"
+      } h-full w-full md:w-72 border-r border-base-300 flex flex-col transition-all duration-200`}
+    >
       <div className="border-b border-base-300 w-full p-5">
         <div className="mb-2">
           <div className="flex items-center justify-between">
@@ -64,10 +68,10 @@ const Sidebar = () => {
               <MessageSquarePlus />
             </GroupModal>
           </div>
-          <span className="font-medium hidden md:block">Chats</span>
+          <span className="font-medium">Chats</span>
         </div>
         {/* TODO: Online filter toggle */}
-        <div className="mt-3 hidden md:flex items-center gap-2">
+        <div className="mt-3 flex items-center gap-2">
           <label className="cursor-pointer flex items-center gap-2">
             <input
               type="checkbox"
@@ -86,7 +90,7 @@ const Sidebar = () => {
       {/* {isOpenGroupModal && <GroupModal />} */}
 
       {/* Search */}
-      <div className="flex justify-center items-center gap-1 py-3">
+      <div className="flex justify-evenly items-center  py-3">
         {showSearchedList && (
           <ArrowLeft
             onClick={() => {
@@ -95,7 +99,7 @@ const Sidebar = () => {
             }}
           />
         )}
-        <label className="input input-bordered flex items-center gap-2">
+        <label className="input w-4/5 input-bordered flex items-center gap-2">
           <input
             // onClick={() => setShowSearchedList(true)}
             value={query}
@@ -160,7 +164,7 @@ const Sidebar = () => {
                 }
               `}
                         >
-                          <div className="relative mx-auto md:mx-0">
+                          <div className="relative">
                             <img
                               // src="/avatar.png"
                               src={
@@ -181,7 +185,7 @@ const Sidebar = () => {
                           </div>
 
                           {/* User info - only visible on larger screens */}
-                          <div className="hidden md:block text-left min-w-0">
+                          <div className="text-left min-w-0">
                             <div className="font-medium truncate">
                               {chat.isGroup
                                 ? chat.groupName
@@ -239,7 +243,7 @@ const Sidebar = () => {
                 }
               `}
                         >
-                          <div className="relative mx-auto md:mx-0">
+                          <div className="relative">
                             <img
                               // src="/avatar.png"
                               src={user.profilePic || "/avatar.png"}
@@ -255,7 +259,7 @@ const Sidebar = () => {
                           </div>
 
                           {/* User info - only visible on larger screens */}
-                          <div className="hidden md:block text-left min-w-0">
+                          <div className="text-left min-w-0">
                             <div className="font-medium truncate">
                               {user.fullName}
                             </div>
@@ -320,7 +324,7 @@ const Sidebar = () => {
                         }
                       `}
               >
-                <div className="relative mx-auto md:mx-0">
+                <div className="relative">
                   <img
                     // src="/avatar.png"
                     src={
@@ -340,7 +344,7 @@ const Sidebar = () => {
                 </div>
 
                 {/* User info - only visible on larger screens */}
-                <div className="hidden md:block text-left min-w-0">
+                <div className="text-left min-w-0">
                   <div className="font-medium truncate">
                     {chat.isGroup ? chat.groupName : chatUser.fullName}
                   </div>
