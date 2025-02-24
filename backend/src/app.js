@@ -5,38 +5,13 @@ import errorHandler from "./middlewares/error.middleware.js";
 import { io, app } from "./lib/socket.js";
 
 // cors middleware to allow cross-origin requests
-// const allowedOrigins = [
-//   "http://localhost:5173",
-//   "https://projects.niladribasak.in",
-//   "https://projects.niladribasak.in/cipher",
-//   "https://www.projects.niladribasak.in/cipher",
-//   "https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app",
-// ];
-
-// app.use(
-//   cors({
-//     // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
-//     origin: allowedOrigins,
-//     credentials: true, // allows cookies, authorization headers, etc to be passed from client
-//   })
-// );
-
-
-// const allowedOrigins = [
-//   "http://localhost:5173",  // Local development
-//   "https://projects.niladribasak.in" // Your frontend in production
-// ];
-
-// // Enable CORS
-// app.use(cors({
-//   origin: allowedOrigins,
-//   credentials: true, // Allows cookies and authentication headers
-//   methods: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
-//   allowedHeaders: "Content-Type, Authorization"
-// }));
-
-// // Handle preflight requests
-// app.options("*", cors());
+app.use(
+  cors({
+    // origin: process.env.CORS_ORIGIN, // allow to server to accept request from different origin
+    origin: "https://projects.niladribasak.in",
+    credentials: true, // allows cookies, authorization headers, etc to be passed from client
+  })
+);
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));

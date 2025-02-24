@@ -4,7 +4,8 @@ import toast from "react-hot-toast";
 import { navigate } from "./navigation";
 
 const PROD_URL =
-  "https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app/api";
+  "https://cipher-mern-chat-app.vercel.app/api";
+// const DEV_URL = "https://cipher-mern-chat-app.vercel.app/api";
 const DEV_URL = "http://localhost:5001/api";
 
 export const axiosInstance = axios.create({
