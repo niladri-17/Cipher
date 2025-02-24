@@ -5,8 +5,8 @@ import { navigate } from "./navigation";
 
 const PROD_URL =
   "https://cipher-mern-chat-app.vercel.app/api";
-const DEV_URL = "https://cipher-mern-chat-app.vercel.app/api";
-// const DEV_URL = "http://localhost:5001/api";
+// const DEV_URL = "https://cipher-mern-chat-app.vercel.app/api";
+const DEV_URL = "http://localhost:5001/api";
 
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.PROD ? PROD_URL : DEV_URL,
