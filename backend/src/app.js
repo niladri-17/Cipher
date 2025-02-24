@@ -5,13 +5,13 @@ import errorHandler from "./middlewares/error.middleware.js";
 import { io, app } from "./lib/socket.js";
 
 // cors middleware to allow cross-origin requests
-const allowedOrigins = [
-  "http://localhost:5173",
-  "https://projects.niladribasak.in",
-  "https://projects.niladribasak.in/cipher",
-  "https://www.projects.niladribasak.in/cipher",
-  "https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app",
-];
+// const allowedOrigins = [
+//   "http://localhost:5173",
+//   "https://projects.niladribasak.in",
+//   "https://projects.niladribasak.in/cipher",
+//   "https://www.projects.niladribasak.in/cipher",
+//   "https://cipher-mern-chat-g9wrwtj5n-niladris-projects-4a9a6d43.vercel.app",
+// ];
 
 // app.use(
 //   cors({
@@ -21,31 +21,40 @@ const allowedOrigins = [
 //   })
 // );
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://projects.niladribasak.in",
+];
+
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error("Not allowed by CORS"));
       }
     },
-    credentials: true, // Required for cookies/auth
+    credentials: true, // Allows cookies & authentication headers
   })
 );
 
-// Optional: Add headers manually for extra safety
+// Handle OPTIONS preflight requests manually
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://projects.niladribasak.in");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.header("Access-Control-Allow-Credentials", "true");
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, DELETE, PATCH, OPTIONS"
+    );
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
   next();
-});
-
-// Handle preflight OPTIONS request
-app.options("*", (req, res) => {
-  res.sendStatus(200);
 });
 
 app.use(express.json({ limit: "50mb" }));
