@@ -68,6 +68,7 @@ const ChatContainer = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => {
           const images = message.media;
+          console.log(message)
           return (
             <div
               key={message._id}
@@ -82,7 +83,7 @@ const ChatContainer = () => {
                     src={
                       message.sender._id === authUser._id
                         ? authUser.profilePic || "/avatar.png"
-                        : selectedChat.profilePic || "/avatar.png"
+                        : message.sender.profilePic || "/avatar.png"
                     }
                     alt="profile pic"
                   />

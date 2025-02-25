@@ -101,49 +101,45 @@ const sendMessage = asyncHandler(async (req, res) => {
       })
       .lean();
 
+    console.log("active users:" + activeUsers);
+
     // If the chat exists and has members, send notifications to all members
     if (chat && chat.members?.length > 0) {
-      // Send the new message to all members except the sender
       chat.members.forEach(async (member) => {
-        if (member._id.toString() !== sender.toString()) {
+        const receiverSocketId = getReceiverSocketId(member._id.toString());
+        if (receiverSocketId) {
+          // Send the new message to all members except the sender and updated/new chat to all online members
           // Ensure IDs are strings for comparison
-          const receiverSocketId = getReceiverSocketId(member._id.toString());
-          if (receiverSocketId) {
+          if (member._id.toString() !== sender.toString()) {
             // Emit "newMessage" event with the message
             io.to(receiverSocketId).emit("newMessage", populatedMessage);
+          }
+          let lastSeenTime = new Date(0); // Default to oldest possible date
 
-            let lastSeenTime = new Date(0); // Default to oldest possible date
-
-            // Check if lastSeen exists and is an array
-            if (Array.isArray(chat.lastSeen)) {
-              // Find the entry manually with a for loop to avoid potential issues with .find()
-              for (let i = 0; i < chat.lastSeen.length; i++) {
-                const entry = chat.lastSeen[i];
-                if (
-                  entry &&
-                  entry.userId &&
-                  entry.userId.toString() === userId
-                ) {
-                  if (entry.lastSeenAt) {
-                    lastSeenTime = new Date(entry.lastSeenAt);
-                  }
-                  break;
+          // Check if lastSeen exists and is an array
+          if (Array.isArray(chat.lastSeen)) {
+            // Find the entry manually with a for loop to avoid potential issues with .find()
+            for (let i = 0; i < chat.lastSeen.length; i++) {
+              const entry = chat.lastSeen[i];
+              if (entry && entry.userId && entry.userId.toString() === userId) {
+                if (entry.lastSeenAt) {
+                  lastSeenTime = new Date(entry.lastSeenAt);
                 }
+                break;
               }
             }
-
-            const unseenCount = await Message.countDocuments({
-              chatId: chat._id,
-              createdAt: { $gt: lastSeenTime },
-              seenBy: { $ne: member._id },
-            });
-
-            chat.unseenCount = unseenCount; // Add unseenCount field to chat
-
-            // Emit "newChat" event with the chat details
-            io.to(receiverSocketId).emit("newChat", chat);
-            console.log(chat);
           }
+
+          const unseenCount = await Message.countDocuments({
+            chatId: chat._id,
+            createdAt: { $gt: lastSeenTime },
+            seenBy: { $ne: member._id },
+          });
+
+          chat.unseenCount = unseenCount; // Add unseenCount field to chat
+
+          // Emit "newChat" event with the chat details
+          io.to(receiverSocketId).emit("newChat", chat);
         }
       });
     }
@@ -193,7 +189,7 @@ const getMessages = asyncHandler(async (req, res) => {
   }
 
   const messages = await Message.find(query)
-    .populate("sender", "fullName email phone")
+    .populate("sender", "fullName email phone profilePic")
     .sort({ createdAt: 1 });
 
   return res

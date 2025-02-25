@@ -37,12 +37,12 @@ const MessageInput = () => {
     try {
       if (!selectedChat.isGroup && messages.length === 0) {
         await activatePrivateChat(selectedChat._id);
-        await getChats();
       }
       await sendMessage({
         text: text.trim(),
         media: imagePreview,
       });
+      // await getChats(); // sending the new chat by socket
 
       // Clear form
       setText("");

@@ -307,7 +307,7 @@ const startGroupChat = asyncHandler(async (req, res) => {
     if (chat) {
       // Send the new message to all members except the sender
       chat.members.forEach((memberId) => {
-        if (memberId.toString() !== sender.toString()) {
+        if (memberId.toString() !== currentUserId.toString()) {
           const receiverSocketId = getReceiverSocketId(memberId);
           if (receiverSocketId) {
             // Emit "newMessage" event with the message

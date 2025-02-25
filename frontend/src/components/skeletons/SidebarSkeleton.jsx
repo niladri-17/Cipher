@@ -7,10 +7,7 @@ const SidebarSkeleton = () => {
   const skeletonContacts = Array(8).fill(null);
 
   return (
-    <aside
-      className="h-full w-full md:w-72 border-r border-base-300
-    flex flex-col transition-all duration-200"
-    >
+    <aside className="hidden md:flex h-full w-full md:w-72 border-r border-base-300 flex-col transition-all duration-200">
       {/* Header */}
       <div className="border-b border-base-300 w-full p-5">
         <div className="mb-2">
