@@ -1,12 +1,22 @@
 import { X } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
+import { formatLastSeen } from "../lib/utils";
 
 const ChatHeader = () => {
-  const { selectedChat, setSelectedChat } = useChatStore();
+  const { selectedChat, setSelectedChat, clearChat, deleteChat, exitGroup } =
+    useChatStore();
   const { authUser, onlineUsers } = useAuthStore();
 
   // console.log("selectedChat", selectedChat);
+
+  const count = selectedChat.members.reduce(
+    (acc, member) =>
+      member._id !== authUser._id && onlineUsers.includes(member._id)
+        ? acc + 1
+        : acc,
+    0
+  );
 
   return (
     <div className="p-2.5 border-b border-base-300">
@@ -44,16 +54,23 @@ const ChatHeader = () => {
                   ).fullName}
             </h3>
             <p className="text-sm text-base-content/70 min-h-5">
-              {!selectedChat.isGroup && (
-                <>
-                  {onlineUsers.includes(
+              {!selectedChat.isGroup ? (
+                onlineUsers.includes(
+                  selectedChat.members.find(
+                    (member) => member._id !== authUser._id
+                  )?._id
+                ) ? (
+                  "Online"
+                ) : (
+                  "last seen " +
+                  formatLastSeen(
                     selectedChat.members.find(
                       (member) => member._id !== authUser._id
-                    )?._id
+                    )?.lastSeen
                   )
-                    ? "Online"
-                    : "Offline"}
-                </>
+                )
+              ) : (
+                <>{count > 1 ? count + " members" : count + " member"} online</>
               )}
             </p>
           </div>
@@ -77,9 +94,16 @@ const ChatHeader = () => {
               />
             </svg>
           </button>
+          {/*
+          <details className="dropdown">
+            <summary className="btn m-1">open or close</summary>
+          </details> */}
 
-          <div className="flex-none rotate-90">
-            <button className="btn btn-circle btn-ghost ">
+          <div className="dropdown dropdown-end">
+            <button
+              tabIndex={0}
+              className="btn btn-circle btn-ghost dropdown-toggle"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
@@ -90,10 +114,26 @@ const ChatHeader = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth="2"
-                  d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"
+                  d="M12 5h.01M12 12h.01M12 19h.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
                 ></path>
               </svg>
             </button>
+            <ul
+              tabIndex={0}
+              className="menu dropdown-content bg-base-100 rounded-box z-10 w-52 p-2 shadow"
+            >
+              <li onClick={() => clearChat(selectedChat._id)}>
+                <a>Clear chat</a>
+              </li>
+              <li onClick={() => deleteChat(selectedChat._id)}>
+                <a>Delete Chat</a>
+              </li>
+              {selectedChat.isGroup && (
+                <li onClick={() => exitGroup(selectedChat._id)}>
+                  <a>Exit group</a>
+                </li>
+              )}
+            </ul>
           </div>
 
           {/* Close button */}

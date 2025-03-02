@@ -9,7 +9,10 @@ import { BrowserRouter } from "react-router-dom";
   /* <BrowserRouter basename="/cipher"> */
 }
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  <StrictMode>
+    {/* <BrowserRouter basename="/cipher"> */}
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  </StrictMode>
 );

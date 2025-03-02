@@ -13,7 +13,10 @@ const getAllChats = asyncHandler(async (req, res) => {
     members: userId,
     inactive: { $ne: userId },
   })
-    .populate("members", "fullName email profilePic status")
+    .populate({
+      path: "members",
+      select: "fullName email profilePic status lastSeen",
+    })
     .populate({
       path: "lastMessage",
       select: "sender text createdAt",
@@ -100,7 +103,14 @@ const searchAllChats = asyncHandler(async (req, res) => {
       },
     ],
   })
-    .populate("members", "fullName email profilePic status")
+    .populate({
+      path: "members",
+      select: "fullName email profilePic status lastSeen",
+      populate: {
+        path: "lastSeen",
+        select: "userId lastSeenAt",
+      },
+    })
     .populate({
       path: "lastMessage",
       select: "sender text createdAt",
@@ -112,7 +122,7 @@ const searchAllChats = asyncHandler(async (req, res) => {
     .sort({ updatedAt: -1 });
 
   // Get users who don't have any chats with current user
-  const usersWithNoChats = await User.aggregate([
+  const usersWithNoPrivateChats = await User.aggregate([
     // Find all users except the current user
     {
       $match: {
@@ -120,7 +130,7 @@ const searchAllChats = asyncHandler(async (req, res) => {
         fullName: { $regex: query, $options: "i" },
       },
     },
-    // Look for chats with these users
+    // Look for private chats with these users
     {
       $lookup: {
         from: "chats",
@@ -132,25 +142,20 @@ const searchAllChats = asyncHandler(async (req, res) => {
                 $and: [
                   { $in: ["$$userId", "$members"] },
                   { $in: [currentUserId, "$members"] },
+                  { $eq: ["$isGroup", false] }, // Only check private chats
+                  { $not: { $in: [currentUserId, "$inactive"] } }, // Current user is not inactive
                 ],
               },
             },
           },
         ],
-        as: "existingChats",
+        as: "existingPrivateChats",
       },
     },
-    // Only keep users who have no chat OR have a chat where currentUserId is inactive
+    // Only keep users who have no private chats with current user
     {
       $match: {
-        $or: [
-          { existingChats: { $size: 0 } }, // No chats exist
-          {
-            existingChats: {
-              $elemMatch: { inactive: currentUserId },
-            },
-          }, // Chats exist but currentUserId is in inactive array
-        ],
+        existingPrivateChats: { $size: 0 },
       },
     },
     // Keep relevant fields
@@ -159,6 +164,7 @@ const searchAllChats = asyncHandler(async (req, res) => {
         _id: 1,
         fullName: 1,
         email: 1,
+        lastSeen: 1,
       },
     },
   ]);
@@ -178,7 +184,7 @@ const searchAllChats = asyncHandler(async (req, res) => {
 
   const data = {
     chats: chats || [],
-    contacts: usersWithNoChats || [],
+    contacts: usersWithNoPrivateChats || [],
     messages: messages || [],
   };
 
@@ -217,7 +223,10 @@ const startPrivateChat = asyncHandler(async (req, res) => {
   if (existingChat) {
     // Populate the existing chat
     const populatedChat = await Chat.findById(existingChat._id)
-      .populate("members", "fullName email profilePic status")
+      .populate({
+        path: "members",
+        select: "fullName email profilePic status lastSeen",
+      })
       .populate({
         path: "lastMessage",
         select: "sender text createdAt",
@@ -241,7 +250,10 @@ const startPrivateChat = asyncHandler(async (req, res) => {
 
   // Populate the new chat
   const populatedNewChat = await Chat.findById(newChat._id)
-    .populate("members", "fullName email profilePic status")
+    .populate({
+      path: "members",
+      select: "fullName email profilePic status lastSeen",
+    })
     .populate({
       path: "lastMessage",
       select: "sender text createdAt",

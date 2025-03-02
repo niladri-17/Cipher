@@ -90,7 +90,10 @@ const sendMessage = asyncHandler(async (req, res) => {
 
     // Handle socket events after successful transaction
     const chat = await Chat.findById(chatId)
-      .populate("members", "fullName email profilePic status")
+      .populate({
+        path: "members",
+        select: "fullName email profilePic status lastSeen",
+      })
       .populate({
         path: "lastMessage",
         select: "sender text createdAt",
@@ -121,7 +124,11 @@ const sendMessage = asyncHandler(async (req, res) => {
             // Find the entry manually with a for loop to avoid potential issues with .find()
             for (let i = 0; i < chat.lastSeen.length; i++) {
               const entry = chat.lastSeen[i];
-              if (entry && entry.userId && entry.userId.toString() === member._id) {
+              if (
+                entry &&
+                entry.userId &&
+                entry.userId.toString() === member._id
+              ) {
                 if (entry.lastSeenAt) {
                   lastSeenTime = new Date(entry.lastSeenAt);
                 }
@@ -180,7 +187,7 @@ const getMessages = asyncHandler(async (req, res) => {
   // Build query based on clear history
   const query = {
     chatId,
-    $nor: [{ "isDeletedFor.userId": userId }]
+    $nor: [{ "isDeletedFor.userId": userId }],
   };
 
   // Only add timestamp check if user has cleared chat before

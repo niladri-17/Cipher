@@ -43,18 +43,18 @@ const chatSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Message",
     },
-    deleteHistory: [
-      {
-        userId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
-        deletedAt: {
-          type: Date,
-          default: null,
-        },
-      },
-    ],
+    // deleteHistory: [ // during delete make chat inactive for the user and update the clearHistory for the user
+    //   {
+    //     userId: {
+    //       type: mongoose.Schema.Types.ObjectId,
+    //       ref: "User",
+    //     },
+    //     deletedAt: {
+    //       type: Date,
+    //       default: null,
+    //     },
+    //   },
+    // ],
     lastSeen: [
       {
         userId: {

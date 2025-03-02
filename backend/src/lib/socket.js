@@ -37,34 +37,22 @@ export const addUserToActiveChat = async (chatId, userId) => {
       $addToSet: { seenBy: userId }, // Add userId to seenBy array if not already there
     }
   );
-
-  await Chat.findOneAndUpdate(
-    { _id: chatId },
-    {
-      $pull: { lastSeen: { userId: userId } },
-    }
-  );
-
-  await Chat.findOneAndUpdate(
-    { _id: chatId },
-    {
-      $push: { lastSeen: { userId: userId, lastSeenAt: new Date() } },
-    }
-  );
 };
 
 // Remove a user from active chat
 export const removeUserFromActiveChat = async (chatId, userId) => {
   if (activeChats[chatId]) {
-    await Chat.findByIdAndUpdate(
-      chatId,
+    await Chat.findOneAndUpdate(
+      { _id: chatId },
       {
-        $set: { "lastSeen.$[elem].lastSeenAt": new Date() },
-      },
+        $pull: { lastSeen: { userId: userId } },
+      }
+    );
+
+    await Chat.findOneAndUpdate(
+      { _id: chatId },
       {
-        arrayFilters: [{ "elem.userId": userId }],
-        new: true,
-        upsert: true,
+        $push: { lastSeen: { userId: userId, lastSeenAt: new Date() } },
       }
     );
 
