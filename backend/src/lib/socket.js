@@ -3,6 +3,7 @@ import http from "http";
 import express from "express";
 import Chat from "../models/chat.model.js";
 import Message from "../models/message.model.js";
+import User from "../models/user.model.js";
 
 const app = express();
 const server = http.createServer(app);
@@ -62,12 +63,14 @@ export const removeUserFromActiveChat = async (chatId, userId) => {
 
 // Get all active users in a chat
 export const getActiveUsersInChat = (chatId) => {
+  console.log(activeChats)
   if (!activeChats[chatId]) return [];
   return Array.from(activeChats[chatId]);
 };
 
 io.on("connection", (socket) => {
-  console.log("A user connected", socket.id);
+  // console.log("A user connected", socket.id);
+  console.log("socket map:", userSocketMap);
 
   const userId = socket.handshake.query.userId;
   if (userId) userSocketMap[userId] = socket.id;
@@ -87,7 +90,7 @@ io.on("connection", (socket) => {
       socket.activeChatRooms = [];
     }
     socket.activeChatRooms.push(chatId);
-    console.log(activeChats);
+    console.log("active chats after joining:", activeChats);
   });
 
   // When a user leaves a chat
@@ -101,12 +104,12 @@ io.on("connection", (socket) => {
         (id) => id !== chatId
       );
     }
-    console.log(activeChats);
+    console.log("active chat after leaving:", activeChats);
   });
 
   socket.on("disconnect", async () => {
-    console.log("A user disconnected", socket.id);
-    await Chat.findByIdAndUpdate(userId, { lastSeen: new Date() });
+    // console.log("A user disconnected", socket.id);
+    await User.findByIdAndUpdate(userId, { lastSeen: new Date() });
     delete userSocketMap[userId];
     io.emit("getOnlineUsers", Object.keys(userSocketMap));
     if (socket.userId && socket.activeChatRooms) {

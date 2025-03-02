@@ -43,7 +43,12 @@ const App = () => {
       disconnectSocket();
       unsubscribeFromChats();
     };
-  }, [connectSocket, disconnectSocket, subscribeToChats, unsubscribeFromChats]);
+  }, [
+    connectSocket,
+    disconnectSocket,
+    // subscribeToChats,
+    // unsubscribeFromChats,
+  ]);
 
   console.log({ onlineUsers });
 

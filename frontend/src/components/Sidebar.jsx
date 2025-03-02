@@ -44,6 +44,18 @@ const Sidebar = () => {
     return () => clearTimeout(delayDebounce);
   }, [query, searchAllChats]);
 
+  const { subscribeToChats, unsubscribeFromChats } = useChatStore();
+
+  // console.log(selectedChat)
+
+  // useEffect(() => {
+  //   subscribeToChats();
+
+  //   return () => {
+  //     unsubscribeFromChats();
+  //   };
+  // }, [subscribeToChats, unsubscribeFromChats]);
+
   console.log(chats);
 
   const filteredChats = showOnlineOnly
@@ -360,7 +372,7 @@ const Sidebar = () => {
                       {chat.isGroup ? chat.groupName : chatUser.fullName}
                     </div>
                     <div className="text-[12px] font-medium">
-                      {formatMessageTime(chat.lastMessage?.createdAt)}
+                      {chat.lastMessage && formatMessageTime(chat.lastMessage.createdAt)}
                     </div>
                   </div>
                   {
@@ -381,7 +393,7 @@ const Sidebar = () => {
                       {chat.unseenCount > 0 && (
                         <div
                           className="relative bottom-0 right-0 size-4 bg-green-500 rounded-full
-              flex items-center justify-center text-xs text-black text-sm"
+              flex items-center justify-center text-xs text-black"
                         >
                           {chat.unseenCount}
                         </div>

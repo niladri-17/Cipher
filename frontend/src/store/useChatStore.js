@@ -2,6 +2,7 @@ import { create } from "zustand";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 import { useAuthStore } from "./useAuthStore";
+import whatsappNotification from "../assets/whatsappNotification.mp3";
 
 export const useChatStore = create((set, get) => ({
   messages: [],
@@ -107,11 +108,23 @@ export const useChatStore = create((set, get) => ({
           (chat) => chat._id === newChat._id
         );
 
+        // Play Whatsapp notification sound
+        const audio = new Audio(whatsappNotification);
+
+        if (
+          state.chats.find(
+            (chat) =>
+              chat._id === newChat._id && state.selectedChat?._id !== newChat._id
+          )
+        ) {
+          audio.play();
+        }
+
         if (existingChatIndex !== -1) {
-          // Chat exists - replace it with updated version
-          const updatedChats = [...state.chats];
-          updatedChats[existingChatIndex] = newChat;
-          return { chats: updatedChats };
+          // Chat exists - move it to the beginning of the arrayand replace with updated version
+          state.chats.splice(existingChatIndex, 1);
+
+          return { chats: [newChat, ...state.chats] };
         } else {
           // New chat - add it to the beginning of the array
           return { chats: [newChat, ...state.chats] };
@@ -149,9 +162,6 @@ export const useChatStore = create((set, get) => ({
 
   openChat: (chatId) => {
     const userId = useAuthStore.getState().authUser._id;
-
-    // Mark this chat as the active one
-    // setActiveChat(chatId);
 
     const socket = useAuthStore.getState().socket;
 

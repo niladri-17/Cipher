@@ -20,21 +20,26 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
     openChat,
   } = useChatStore();
+
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
+
+  console.log(selectedChat._id);
 
   useEffect(() => {
     const cleanup = openChat(selectedChat._id);
 
     return cleanup;
-  }, [openChat, selectedChat]);
+  }, [openChat, selectedChat._id]);
 
   useEffect(() => {
     getMessages(selectedChat._id);
 
     subscribeToMessages();
 
-    return () => unsubscribeFromMessages();
+    return () => {
+      unsubscribeFromMessages();
+    };
   }, [
     selectedChat._id,
     getMessages,
@@ -68,7 +73,7 @@ const ChatContainer = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => {
           const images = message.media;
-          console.log(message)
+          console.log(message);
           return (
             <div
               key={message._id}

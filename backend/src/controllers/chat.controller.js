@@ -4,6 +4,7 @@ import Message from "../models/message.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
+import { getReceiverSocketId, io } from "../lib/socket.js";
 
 const getAllChats = asyncHandler(async (req, res) => {
   const userId = req.user._id.toString(); // Convert ObjectId to string
@@ -306,16 +307,12 @@ const startGroupChat = asyncHandler(async (req, res) => {
 
     if (chat) {
       // Send the new message to all members except the sender
-      chat.members.forEach((memberId) => {
-        if (memberId.toString() !== currentUserId.toString()) {
-          const receiverSocketId = getReceiverSocketId(memberId);
-          if (receiverSocketId) {
-            // Emit "newMessage" event with the message
-            io.to(receiverSocketId).emit("newMessage", populatedMessage);
-
-            // Emit "newChat" event with the chat details
-            io.to(receiverSocketId).emit("newChat", chat);
-          }
+      chat.members.forEach((member) => {
+        const memberId = member._id;
+        const receiverSocketId = getReceiverSocketId(memberId);
+        if (receiverSocketId) {
+          // Emit "newChat" event with the chat details
+          io.to(receiverSocketId).emit("newChat", chat);
         }
       });
     }
