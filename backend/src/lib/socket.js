@@ -37,6 +37,20 @@ export const addUserToActiveChat = async (chatId, userId) => {
       $addToSet: { seenBy: userId }, // Add userId to seenBy array if not already there
     }
   );
+
+  await Chat.findOneAndUpdate(
+    { _id: chatId },
+    {
+      $pull: { lastSeen: { userId: userId } },
+    }
+  );
+
+  await Chat.findOneAndUpdate(
+    { _id: chatId },
+    {
+      $push: { lastSeen: { userId: userId, lastSeenAt: new Date() } },
+    }
+  );
 };
 
 // Remove a user from active chat
@@ -63,7 +77,7 @@ export const removeUserFromActiveChat = async (chatId, userId) => {
 
 // Get all active users in a chat
 export const getActiveUsersInChat = (chatId) => {
-  console.log(activeChats)
+  console.log(activeChats);
   if (!activeChats[chatId]) return [];
   return Array.from(activeChats[chatId]);
 };

@@ -19,6 +19,7 @@ const messageSchema = new mongoose.Schema(
       {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
         deletedAt: { type: Date, default: null },
+        deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
       },
     ],
   },

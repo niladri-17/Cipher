@@ -100,6 +100,10 @@ export const useChatStore = create((set, get) => ({
     const { chats } = get();
     if (!chats) return;
 
+    // Create audio object once
+    const notificationSound = new Audio(whatsappNotification);
+    notificationSound.load(); // Pre-load the audio
+
     const socket = useAuthStore.getState().socket;
     socket.on("newChat", (newChat) => {
       set((state) => {
@@ -108,24 +112,32 @@ export const useChatStore = create((set, get) => ({
           (chat) => chat._id === newChat._id
         );
 
-        // Play Whatsapp notification sound
-        const audio = new Audio(whatsappNotification);
+        console.log("New chat received:", newChat);
+
+        const authUserId = useAuthStore.getState().authUser._id;
+        let shouldPlaySound = false;
 
         if (existingChatIndex !== -1) {
-          // Chat exists - move it to the beginning of the arrayand replace with updated version
-          state.chats.splice(existingChatIndex, 1);
-          if (state.selectedChat?._id !== newChat._id) audio.play();
+          // Existing chat - only play sound if it's not the selected chat
+          shouldPlaySound = state.selectedChat?._id !== newChat._id;
 
-          return { chats: [newChat, ...state.chats] };
+          // Update chat - move it to the beginning and replace with updated version
+          state.chats.splice(existingChatIndex, 1);
         } else {
-          // New chat - add it to the beginning of the array
-          newChat.members.forEach((member) => {
-            if (member._id !== useAuthStore.getState().authUser._id) {
-              audio.play();
-            }
-          });
-          return { chats: [newChat, ...state.chats] };
+          // New chat - play sound if current user didn't create it
+          shouldPlaySound = newChat.createdBy !== authUserId;
         }
+
+        // Try to play sound if needed
+        if (shouldPlaySound) {
+          notificationSound.play().catch((err) => {
+            console.log("Could not play notification:", err);
+          });
+        }
+
+        return {
+          chats: [newChat, ...state.chats],
+        };
       });
     });
   },
