@@ -81,12 +81,14 @@ const Sidebar = () => {
       <div className="border-b border-base-300 w-full p-5">
         <div className="mb-2">
           <div className="flex items-center justify-between">
-            <Users className="size-6" />
+            <div className="flex items-center justify-between gap-2">
+              <Users className="size-6" />
+              <span className="font-medium">Chats</span>
+            </div>
             <GroupModal>
               <MessageSquarePlus />
             </GroupModal>
           </div>
-          <span className="font-medium">Chats</span>
         </div>
         {/* TODO: Online filter toggle */}
         <div className="mt-3 flex items-center gap-2">
@@ -194,7 +196,7 @@ const Sidebar = () => {
                               className="size-12 object-cover rounded-full"
                             />
                             {!chat.isGroup &&
-                              onlineUsers.includes(chat._id) && (
+                              onlineUsers.includes(chatUser._id) && (
                                 <span
                                   className="absolute bottom-0 right-0 size-3 bg-green-500
                     rounded-full ring-2 ring-zinc-900"
@@ -202,38 +204,47 @@ const Sidebar = () => {
                               )}
                           </div>
 
-                          {/* User info - only visible on larger screens */}
-                          <div className="text-left min-w-0">
-                            <div className="font-medium truncate">
-                              {chat.isGroup
-                                ? chat.groupName
-                                : chatUser.fullName}
+                          <div className="text-left min-w-0 flex-grow">
+                            <div className="flex justify-between">
+                              <div className="font-medium truncate pr-2">
+                                {chat.isGroup
+                                  ? chat.groupName
+                                  : chatUser.fullName}
+                              </div>
+                              <div className="text-[12px] font-medium shrink-0">
+                                {chat.lastMessage &&
+                                  formatMessageTime(chat.lastMessage.createdAt)}
+                              </div>
                             </div>
                             {
-                              <div className="text-sm text-zinc-400 min-h-5">
-                                {chat.lastMessage &&
-                                  (chat.isGroup ? (
-                                    <div className="truncate">
-                                      {chat.lastMessage.sender.fullName}:{" "}
-                                      {chat.lastMessage.text}
-                                    </div>
-                                  ) : (
-                                    <div className="truncate">
-                                      {chat.lastMessage.text}
-                                    </div>
-                                  ))}
+                              <div className="flex justify-between">
+                                <div className="text-sm text-zinc-400 min-h-5">
+                                  {chat.lastMessage &&
+                                    (chat.isGroup ? (
+                                      <div className="truncate">
+                                        {chat.lastMessage.sender.fullName}:{" "}
+                                        {chat.lastMessage.text}
+                                      </div>
+                                    ) : (
+                                      <div className="truncate">
+                                        {chat.lastMessage.text}
+                                      </div>
+                                    ))}
+                                </div>
+                                {chat.unseenCount > 0 && (
+                                  <div
+                                    className="relative bottom-0 right-0 size-4 bg-green-500 rounded-full
+              flex items-center justify-center text-xs text-black"
+                                  >
+                                    {chat.unseenCount}
+                                  </div>
+                                )}
                               </div>
                             }
                           </div>
                         </button>
                       );
                     })}
-                    {/*
-          {filteredChats.length === 0 && (
-            <div className="text-center text-zinc-500 py-4">
-              No online users
-            </div>
-          )} */}
                   </div>
                 </>
               )}
@@ -268,12 +279,13 @@ const Sidebar = () => {
                               alt={user.fullName}
                               className="size-12 object-cover rounded-full"
                             />
-                            {/* {!chat.isGroup && onlineUsers.includes(chat._id) && (
-                    <span
-                      className="absolute bottom-0 right-0 size-3 bg-green-500
+                            {!user.isGroup &&
+                              onlineUsers.includes(user._id) && (
+                                <span
+                                  className="absolute bottom-0 right-0 size-3 bg-green-500
                     rounded-full ring-2 ring-zinc-900"
-                    />
-                  )} */}
+                                />
+                              )}
                           </div>
 
                           {/* User info - only visible on larger screens */}
@@ -281,31 +293,10 @@ const Sidebar = () => {
                             <div className="font-medium truncate">
                               {user.fullName}
                             </div>
-                            {/* {
-                    <div className="text-sm text-zinc-400 min-h-5">
-                      {chat.lastMessage &&
-                        (chat.isGroup ? (
-                          <div className="truncate">
-                            {chat.lastMessage.sender.fullName}:{" "}
-                            {chat.lastMessage.text}
-                          </div>
-                        ) : (
-                          <div className="truncate">
-                            {chat.lastMessage.text}
-                          </div>
-                        ))}
-                    </div>
-                  } */}
                           </div>
                         </button>
                       );
                     })}
-
-                    {/* {filteredChats.length === 0 && (
-            <div className="text-center text-zinc-500 py-4">
-              No online users
-            </div>
-          )} */}
                   </div>
                 </>
               )}
@@ -353,26 +344,23 @@ const Sidebar = () => {
                     alt={chat.name}
                     className="size-12 object-cover rounded-full"
                   />
-                  {!chat.isGroup &&
-                    onlineUsers.includes(
-                      chat.members.find((member) => member._id !== authUser._id)
-                        ._id
-                    ) && (
-                      <span
-                        className="absolute bottom-0 right-0 size-3 bg-green-500
+                  {!chat.isGroup && onlineUsers.includes(chatUser._id) && (
+                    <span
+                      className="absolute bottom-0 right-0 size-3 bg-green-500
                             rounded-full ring-2 ring-zinc-900"
-                      />
-                    )}
+                    />
+                  )}
                 </div>
 
                 {/* User info - only visible on larger screens */}
-                <div className="text-left w-full">
+                <div className="text-left min-w-0 flex-grow">
                   <div className="flex justify-between">
-                    <div className="font-medium truncate">
+                    <div className="font-medium truncate pr-2">
                       {chat.isGroup ? chat.groupName : chatUser.fullName}
                     </div>
-                    <div className="text-[12px] font-medium">
-                      {chat.lastMessage && formatMessageTime(chat.lastMessage.createdAt)}
+                    <div className="text-[12px] font-medium shrink-0">
+                      {chat.lastMessage &&
+                        formatMessageTime(chat.lastMessage.createdAt)}
                     </div>
                   </div>
                   {

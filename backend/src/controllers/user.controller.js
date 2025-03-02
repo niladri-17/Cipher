@@ -9,10 +9,11 @@ import { getReceiverSocketId, io } from "../lib/socket.js";
 const searchUsers = asyncHandler(async (req, res) => {
   const { query } = req.query;
   const users = await User.find({
+    _id: { $ne: req.user._id },
     $or: [
-      { fullName: { $regex: query } },
-      { email: { $regex: query } },
-      { phone: { $regex: query } },
+      { fullName: { $regex: query, $options: "i" } },
+      { email: { $regex: query, $options: "i" } },
+      { phone: { $regex: query, $options: "i" } },
     ],
   });
   if (users)

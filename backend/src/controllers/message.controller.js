@@ -101,7 +101,7 @@ const sendMessage = asyncHandler(async (req, res) => {
       })
       .lean();
 
-    console.log(`active users in chatId: ${chatId}` + activeUsers);
+    console.log(`active users in chatId ${chatId} : \n` + activeUsers);
 
     // If the chat exists and has members, send notifications to all members
     if (chat && chat.members?.length > 0) {

@@ -7,17 +7,19 @@ const SidebarSkeleton = () => {
   const skeletonContacts = Array(8).fill(null);
 
   return (
-    <aside className="hidden md:flex h-full w-full md:w-72 border-r border-base-300 flex-col transition-all duration-200">
+    <aside className="flex h-full w-full md:w-72 border-r border-base-300 flex-col transition-all duration-200">
       {/* Header */}
       <div className="border-b border-base-300 w-full p-5">
         <div className="mb-2">
           <div className="flex items-center justify-between">
-            <Users className="size-6" />
+            <div className="flex items-center justify-between gap-2">
+              <Users className="size-6" />
+              <span className="font-medium">Chats</span>
+            </div>
             <GroupModal>
               <MessageSquarePlus />
             </GroupModal>
           </div>
-          <span className="font-medium">Chats</span>
         </div>
       </div>
 

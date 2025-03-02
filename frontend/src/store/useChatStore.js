@@ -111,22 +111,19 @@ export const useChatStore = create((set, get) => ({
         // Play Whatsapp notification sound
         const audio = new Audio(whatsappNotification);
 
-        if (
-          state.chats.find(
-            (chat) =>
-              chat._id === newChat._id && state.selectedChat?._id !== newChat._id
-          )
-        ) {
-          audio.play();
-        }
-
         if (existingChatIndex !== -1) {
           // Chat exists - move it to the beginning of the arrayand replace with updated version
           state.chats.splice(existingChatIndex, 1);
+          if (state.selectedChat?._id !== newChat._id) audio.play();
 
           return { chats: [newChat, ...state.chats] };
         } else {
           // New chat - add it to the beginning of the array
+          newChat.members.forEach((member) => {
+            if (member._id !== useAuthStore.getState().authUser._id) {
+              audio.play();
+            }
+          });
           return { chats: [newChat, ...state.chats] };
         }
       });

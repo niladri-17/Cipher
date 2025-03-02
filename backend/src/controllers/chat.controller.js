@@ -12,16 +12,6 @@ const getAllChats = asyncHandler(async (req, res) => {
   const chats = await Chat.find({
     members: userId,
     inactive: { $ne: userId },
-    $nor: [
-      {
-        deleteHistory: {
-          $elemMatch: {
-            userId: userId,
-            deletedAt: { $exists: true, $ne: null },
-          },
-        },
-      },
-    ],
   })
     .populate("members", "fullName email profilePic status")
     .populate({
@@ -84,29 +74,25 @@ const searchAllChats = asyncHandler(async (req, res) => {
     // User must be a member AND not in inactive list
     members: currentUserId,
     inactive: { $ne: currentUserId },
-    // No delete history for this user
-    $nor: [
-      {
-        deleteHistory: {
-          $elemMatch: {
-            userId: currentUserId,
-            deletedAt: { $exists: true, $ne: null },
-          },
-        },
-      },
-    ],
-    // Match either groupName (if group) or member's fullName (if private chat)
     $or: [
-      { groupName: { $regex: query, $options: "i" } }, // Case-insensitive search for groups
+      // Search group chats by name
+      { groupName: { $regex: query, $options: "i" } },
+
+      // For private chats, we need to use a different approach
       {
-        // Search for private chat members (excluding current user)
         $and: [
+          // Check if it's a private chat
           { isGroup: false },
+          // Use $elemMatch on the members field specifically
           {
             members: {
               $elemMatch: {
-                _id: { $ne: currentUserId }, // Exclude current user
-                fullName: { $regex: query, $options: "i" }, // Match other member's name
+                $ne: currentUserId, // Exclude current user
+                $in: (
+                  await User.find({
+                    fullName: { $regex: query, $options: "i" },
+                  }).select("_id")
+                ).map((user) => user._id),
               },
             },
           },
