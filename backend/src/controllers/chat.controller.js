@@ -5,6 +5,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
+import { addGroupMember } from "./group.controller.js";
 
 const getAllChats = asyncHandler(async (req, res) => {
   const userId = req.user._id.toString(); // Convert ObjectId to string
@@ -371,7 +372,92 @@ const clearChat = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Chat cleared successfully"));
 });
 
-// exports.deleteChat = (req, res) => {};
+const deleteChat = asyncHandler(async (req, res) => {
+  const { chatId } = req.params;
+  const userId = req.user._id;
+
+  const chat = await Chat.findOne({
+    _id: chatId,
+    members: userId,
+  });
+
+  if (!chat) {
+    throw new ApiError(404, "Chat not found");
+  }
+
+  // Update or add clearHistory entry for this user
+  await Chat.findByIdAndUpdate(chatId, {
+    $pull: { clearHistory: { userId: userId } }, // Remove old entry if exists
+  });
+
+  await Chat.findByIdAndUpdate(chatId, {
+    $push: {
+      clearHistory: {
+        userId: userId,
+        clearedAt: new Date(),
+      },
+    },
+    $addToSet: { inactive: userId },
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Chat deleted successfully"));
+});
+
+const exitGroup = asyncHandler(async (req, res) => {
+  const { chatId } = req.params;
+  const userId = req.user._id.toString();
+
+  const chat = await Chat.findOne({ _id: chatId, members: userId });
+
+  if (!chat) {
+    throw new ApiError(404, "Chat not found");
+  }
+
+  // Ensure user is actually in the members list
+  if (!chat.members.some((member) => member.toString() === userId)) {
+    throw new ApiError(400, "User is not a member of this chat");
+  }
+
+  // If the user is the last admin, assign a new admin
+  if (chat.admins.length === 1 && chat.admins[0].toString() === userId) {
+    const newAdmin = chat.members.find(
+      (member) => member.toString() !== userId
+    );
+    if (newAdmin) {
+      await Chat.findByIdAndUpdate(chatId, { $set: { admins: [newAdmin] } });
+    }
+  }
+
+  // Remove user and update necessary fields in a single query
+  await Chat.findByIdAndUpdate(
+    chatId,
+    {
+      $pull: {
+        clearHistory: { userId: userId }, // Remove previous history
+        admins: userId, // Remove from admins if present
+        members: userId, // Remove from members
+      },
+      $push: {
+        clearHistory: {
+          userId: userId,
+          clearedAt: new Date(),
+        },
+      },
+      $addToSet: { inactive: userId }, // Add to inactive list (prevent duplicates)
+    },
+    { new: true }
+  );
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Exited group successfully"));
+});
+
+// editGroupNameOrAddGroupMember
+// removeGroupMember
+
 
 export {
   getAllChats,
@@ -379,4 +465,7 @@ export {
   startPrivateChat,
   activatePrivateChat,
   startGroupChat,
+  clearChat,
+  deleteChat,
+  exitGroup,
 };

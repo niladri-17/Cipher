@@ -192,4 +192,25 @@ export const useChatStore = create((set, get) => ({
       ),
     }));
   },
+  clearChat: async (chatId, data) => {
+    try {
+      const res = await axiosInstance.patch(`chat/${chatId}/clear`, data);
+    } catch (error) {
+      if (error.response.status !== 401) toast.error("Failed to clear the chat");
+    }
+  },
+  deleteChat: async (chatId, data) => {
+    try {
+      const res = await axiosInstance.patch(`chat/${chatId}/clear`, data);
+    } catch (error) {
+      if (error.response.status !== 401) toast.error("Failed to clear the chat");
+    }
+  },
+  exitGroup: async (chatId, data) => {
+    try {
+      const res = await axiosInstance.patch(`chat/${chatId}/clear`, data);
+    } catch (error) {
+      if (error.response.status !== 401) toast.error("Failed to clear the chat");
+    }
+  },
 }));
